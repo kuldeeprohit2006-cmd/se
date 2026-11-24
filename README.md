@@ -1,6 +1,6 @@
 # 🛡️ MediGuard - Student Campus Emergency & Health Response System
 
-> **Live Deployment:** [https://spry-sitar-dlf6xq7.tmp.now](https://spry-sitar-dlf6xq7.tmp.now)  
+> **Live Production Deployment:** [https://se-ne6t-git-main-ddd-510a.vercel.app/login](https://se-ne6t-git-main-ddd-510a.vercel.app/login)  
 > Designed for **IIIT Lucknow** (`@iiitl.ac.in`) & Campus Student Health Safety.
 
 ---

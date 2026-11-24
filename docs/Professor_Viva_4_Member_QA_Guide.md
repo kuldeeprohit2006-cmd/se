@@ -158,4 +158,12 @@
 | **Q&A** | Faculty Questioning & Defense | **All 4 Members** | 3–4 minutes |
 
 ---
+
+## 🌐 OFFICIAL DEPLOYMENT & ARTIFACT LINKS
+- **Live Vercel Production Link:** [https://se-ne6t-git-main-ddd-510a.vercel.app/login](https://se-ne6t-git-main-ddd-510a.vercel.app/login)
+- **Public GitHub Repository:** [https://github.com/kuldeeprohit2006-cmd/se](https://github.com/kuldeeprohit2006-cmd/se)
+- **Demo Student Login:** `lcs2025044@iiitl.ac.in` (Password: `Student@123`)
+- **Demo Admin Login:** `admin@iiitl.ac.in` (Password: `Admin@123`)
+
+---
 *Created for Software Engineering Project Defense | IIIT Lucknow | Group Submission 2026*

@@ -112,7 +112,7 @@ def create_presentation():
     bottom_box = s1.shapes.add_textbox(Inches(0.8), Inches(6.8), Inches(11.7), Inches(0.4))
     tf = bottom_box.text_frame
     p = tf.paragraphs[0]
-    p.text = "Target Batch: B.Tech (CS / IT / CSAI / CSB) • Semester 3 • Live Link: https://spry-sitar-dlf6xq7.tmp.now"
+    p.text = "Target Batch: B.Tech (CS / IT / CSAI / CSB) • Semester 3 • Official Live Link: https://se-ne6t-git-main-ddd-510a.vercel.app/login"
     p.font.size = Pt(11)
     p.font.color.rgb = TEXT_MUTED
 
@@ -427,7 +427,7 @@ def create_presentation():
     p.space_after = Pt(8)
 
     live_items = [
-        "• Vercel Multi-Service Hosting:\n  Live at: https://spry-sitar-dlf6xq7.tmp.now",
+        "• Vercel Multi-Service Hosting:\n  Live at: https://se-ne6t-git-main-ddd-510a.vercel.app/login",
         "• GitHub Source Code:\n  Repository: kuldeeprohit2006-cmd/se",
         "• Database Cluster:\n  MongoDB Atlas Replica Set with automated connection retry & IPv4 fallback.",
         "• Zero CORS Architecture:\n  Frontend & Serverless Edge APIs co-located on identical host origin.",

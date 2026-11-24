@@ -47,7 +47,7 @@ Core functionalities include:
 MediGuard operates as a cloud-native, distributed web solution. It interfaces with:
 - **Client Tier:** React 19 Progressive Web Client executing on student smartphones and desktop browsers.
 - **Application Tier:** Node.js/Express.js RESTful API, containerized via Docker and orchestrated via Kubernetes.
-- **Serverless Edge Tier:** Vercel Multi-Service edge router executing serverless API endpoints.
+- **Live Serverless Deployment:** Deployed on Vercel at `https://se-ne6t-git-main-ddd-510a.vercel.app/login` with continuous integration from GitHub `kuldeeprohit2006-cmd/se`.
 - **Persistence Tier:** MongoDB Atlas cloud cluster storing user records, RBAC roles, and emergency incidents.
 
 ### 2.2 Product Functions
