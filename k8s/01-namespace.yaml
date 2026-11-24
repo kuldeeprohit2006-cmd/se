@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mediguard-production
+  labels:
+    app.kubernetes.io/name: mediguard
+    app.kubernetes.io/part-of: emergency-health-system
+    environment: production
