@@ -1,266 +1,343 @@
 import os
+import shutil
 from pptx import Presentation
 from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
-from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
+from pptx.enum.text import PP_ALIGN
 from pptx.enum.shapes import MSO_SHAPE
 
-def create_presentation():
+def create_beautiful_presentation():
     prs = Presentation()
-    # 16:9 Widescreen dimensions
+    # 16:9 Widescreen dimensions for Google Slides
     prs.slide_width = Inches(13.333)
     prs.slide_height = Inches(7.5)
-    blank_slide_layout = prs.slide_layouts[6]
+    blank_layout = prs.slide_layouts[6]
 
-    # Color Palette
-    BG_DARK = RGBColor(12, 14, 23)      # #0C0E17 Deep Navy
-    CARD_BG = RGBColor(23, 27, 43)      # #171B2B Glass Navy
-    BORDER_COLOR = RGBColor(38, 45, 68) # #262D44
-    ACCENT_RED = RGBColor(255, 45, 85)  # #FF2D55 Crimson Red
-    ACCENT_GREEN = RGBColor(0, 208, 133)# #00D085 Pulse Green
-    ACCENT_BLUE = RGBColor(10, 132, 255)# #0A84FF Digital Blue
-    ACCENT_PURPLE = RGBColor(191, 90, 242) # #BF5AF2 Admin Purple
-    TEXT_LIGHT = RGBColor(240, 242, 248)# #F0F2F8 Pure Text
-    TEXT_MUTED = RGBColor(154, 165, 190)# #9AA5BE Secondary Text
+    # Theme Colors (Cyber-Medical Dark Mode)
+    BG_DARK = RGBColor(11, 15, 25)        # #0B0F19 Deep Night
+    CARD_BG = RGBColor(22, 29, 47)        # #161D2F Glass Slate
+    INNER_BG = RGBColor(16, 21, 35)       # #101523 Darker Slate
+    BORDER_SUBTLE = RGBColor(38, 48, 77)  # #26304D
+    ACCENT_RED = RGBColor(255, 59, 92)    # #FF3B5C Crimson Alert
+    ACCENT_GREEN = RGBColor(0, 224, 142)  # #00E08E Pulse Green
+    ACCENT_BLUE = RGBColor(14, 144, 255)  # #0E90FF Cyber Blue
+    ACCENT_PURPLE = RGBColor(185, 96, 255)# #B960FF Command Violet
+    ACCENT_AMBER = RGBColor(255, 179, 0)  # #FFB300 Alert Amber
+    TEXT_LIGHT = RGBColor(245, 247, 252)  # #F5F7FC Crisp White
+    TEXT_MUTED = RGBColor(156, 169, 196)  # #9CA9C4 Cool Gray
+    TEXT_FAINT = RGBColor(105, 118, 147)  # #697693 Subtitle Gray
 
-    def set_slide_bg(slide):
+    def set_bg(slide):
         bg = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, 0, 0, prs.slide_width, prs.slide_height)
         bg.fill.solid()
         bg.fill.fore_color.rgb = BG_DARK
         bg.line.fill.background()
         return bg
 
-    def add_card(slide, left, top, width, height, bg_color=CARD_BG, border_color=BORDER_COLOR):
-        card = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, left, top, width, height)
+    def make_card(slide, x, y, w, h, bg_color=CARD_BG, border_color=BORDER_SUBTLE, border_width=1.5):
+        card = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, x, y, w, h)
         card.fill.solid()
         card.fill.fore_color.rgb = bg_color
         card.line.color.rgb = border_color
-        card.line.width = Pt(1.5)
+        card.line.width = Pt(border_width)
         return card
 
-    # ==========================================
-    # SLIDE 1: TITLE & TEAM ROLES (MEMBER 1)
-    # ==========================================
-    s1 = prs.slides.add_slide(blank_slide_layout)
-    set_slide_bg(s1)
+    def add_badge(slide, x, y, text, text_color=ACCENT_RED, bg_color=INNER_BG, border_color=ACCENT_RED):
+        w = Inches(len(text) * 0.11 + 0.4)
+        h = Inches(0.32)
+        badge = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, x, y, w, h)
+        badge.fill.solid()
+        badge.fill.fore_color.rgb = bg_color
+        badge.line.color.rgb = border_color
+        badge.line.width = Pt(1.0)
+        tf = badge.text_frame
+        tf.word_wrap = False
+        p = tf.paragraphs[0]
+        p.text = text
+        p.alignment = PP_ALIGN.CENTER
+        p.font.size = Pt(9.5)
+        p.font.bold = True
+        p.font.color.rgb = text_color
+        return badge
 
-    # Top Tag
-    tag_box = s1.shapes.add_textbox(Inches(0.8), Inches(0.6), Inches(11.7), Inches(0.4))
-    tf = tag_box.text_frame
-    p = tf.paragraphs[0]
-    p.text = "🛡️ SOFTWARE ENGINEERING PROJECT PRESENTATION • IIIT LUCKNOW"
-    p.font.size = Pt(12)
-    p.font.bold = True
-    p.font.color.rgb = ACCENT_RED
+    def add_header(slide, tag_text, title_text, subtitle_text, accent_color=ACCENT_RED):
+        add_badge(slide, Inches(0.8), Inches(0.42), tag_text, text_color=accent_color, border_color=accent_color)
+        tb = slide.shapes.add_textbox(Inches(0.8), Inches(0.82), Inches(11.733), Inches(0.95))
+        tf = tb.text_frame
+        tf.word_wrap = True
+        p = tf.paragraphs[0]
+        p.text = title_text
+        p.font.size = Pt(22)
+        p.font.bold = True
+        p.font.color.rgb = TEXT_LIGHT
 
-    # Title & Subtitle
-    title_box = s1.shapes.add_textbox(Inches(0.8), Inches(1.0), Inches(11.7), Inches(1.4))
+        p2 = tf.add_paragraph()
+        p2.text = subtitle_text
+        p2.font.size = Pt(12)
+        p2.font.color.rgb = TEXT_MUTED
+        p2.space_before = Pt(3)
+
+    # ==========================================
+    # SLIDE 1: COVER & 4 TEAM MEMBER ROLES
+    # ==========================================
+    s1 = prs.slides.add_slide(blank_layout)
+    set_bg(s1)
+
+    # Header section
+    add_badge(s1, Inches(0.8), Inches(0.45), "🛡️ IIIT LUCKNOW • B.TECH CS/IT/CSAI/CSB • SEMESTER 3", ACCENT_RED, border_color=ACCENT_RED)
+    add_badge(s1, Inches(6.0), Inches(0.45), "COURSE: SOFTWARE ENGINEERING", ACCENT_BLUE, border_color=ACCENT_BLUE)
+    add_badge(s1, Inches(9.3), Inches(0.45), "SLIDE 01 / 05", TEXT_MUTED, border_color=BORDER_SUBTLE)
+
+    title_box = s1.shapes.add_textbox(Inches(0.8), Inches(0.95), Inches(11.733), Inches(1.4))
     tf = title_box.text_frame
     tf.word_wrap = True
     p = tf.paragraphs[0]
     p.text = "MediGuard: Campus Emergency Health & Response System"
-    p.font.size = Pt(32)
+    p.font.size = Pt(30)
     p.font.bold = True
     p.font.color.rgb = TEXT_LIGHT
 
     p2 = tf.add_paragraph()
-    p2.text = "Full-Stack MERN Platform with Real Audio Dispatch Calling, IIITL Identity Mapping & Kubernetes Architecture"
-    p2.font.size = Pt(14)
+    p2.text = "Full-Stack Cloud-Native MERN Solution with Web Audio Dispatch Calling, IIITL Identity Mapping & Kubernetes Scalability"
+    p2.font.size = Pt(13)
     p2.font.color.rgb = TEXT_MUTED
+    p2.space_before = Pt(4)
 
-    # 4 Team Member Roles Cards
+    # 4 Member Role Cards
     roles = [
-        ("MEMBER 1: PROJECT LEAD", "Requirement Analysis & Scope", "• Problem Statement & Gaps\n• IEEE 830 SRS Formulation\n• Campus Medical Triage\n• Ethics & Safety Disclaimers", ACCENT_RED),
-        ("MEMBER 2: FRONTEND LEAD", "UI/UX & Audio Engineering", "• React 19 & Vite Architecture\n• Web Audio API Synthesizer\n• Live Canvas Waveform HUD\n• 110 BPM CPR Metronome", ACCENT_BLUE),
-        ("MEMBER 3: BACKEND LEAD", "API & Database Systems", "• Node.js & Express REST API\n• MongoDB Atlas Cloud Modeling\n• IIITL Roll Parsing & JWT\n• Admin Command Center (/admin)", ACCENT_PURPLE),
-        ("MEMBER 4: DEVOPS LEAD", "Cloud & Deployment", "• Multi-Stage Docker Build\n• Kubernetes (Deploy, HPA, Ingress)\n• Vercel Multi-Service Monorepo\n• E2E Integration Testing", ACCENT_GREEN)
+        ("MEMBER 1: PROJECT LEAD", "Requirement Analysis & Scope", [
+            ("Problem Definition", "Campus emergency response delays & golden-hour gap."),
+            ("IEEE 830 SRS", "Functional & non-functional requirements specification."),
+            ("Clinical Protocols", "Triage prioritization & medical safety standards."),
+            ("Ethics & Legal", "Good Samaritan protections & data privacy boundaries.")
+        ], ACCENT_RED),
+
+        ("MEMBER 2: FRONTEND LEAD", "UI/UX & Audio Engineering", [
+            ("React 19 & Vite 8", "Cyber-medical responsive dark glassmorphism UI."),
+            ("Web Audio API", "Real-time DTMF telephone synthesizer (zero MP3s)."),
+            ("HTML5 Canvas HUD", "Dynamic audio waveform visualization in dispatch call."),
+            ("110 BPM Metronome", "Acoustic compression pacer for AHA adult CPR.")
+        ], ACCENT_BLUE),
+
+        ("MEMBER 3: BACKEND LEAD", "API & Database Architecture", [
+            ("Express REST Engine", "Microservices for ambulance, blood, first-aid, meds."),
+            ("IIITL Roll Parser", "Regex parser for LCS, LIT, LCI, LCB (rolls 1-60)."),
+            ("MongoDB Atlas", "Schema modeling with compound indexes & hybrid sync."),
+            ("Admin Command Hub", "Real-time incident dispatch & fleet triage at /admin.")
+        ], ACCENT_PURPLE),
+
+        ("MEMBER 4: DEVOPS LEAD", "Cloud & Deployment Pipeline", [
+            ("Docker Multi-Stage", "Lean Alpine container builds (~25 MB production size)."),
+            ("Kubernetes Clusters", "Deployments, HPA (2-10 pods), Ingress controllers."),
+            ("Vercel Multi-Service", "Serverless edge architecture with SPA fallback routing."),
+            ("E2E Integration", "CI/CD continuous delivery from GitHub repository.")
+        ], ACCENT_GREEN)
     ]
 
-    card_w = Inches(2.75)
+    card_w = Inches(2.78)
     gap = Inches(0.2)
     start_x = Inches(0.8)
-    top_y = Inches(2.7)
+    top_y = Inches(2.6)
+    card_h = Inches(4.0)
 
-    for i, (m_title, m_sub, m_desc, m_color) in enumerate(roles):
+    for i, (m_tag, m_role, items, m_color) in enumerate(roles):
         x = start_x + i * (card_w + gap)
-        add_card(s1, x, top_y, card_w, Inches(3.9), bg_color=CARD_BG, border_color=m_color)
+        make_card(s1, x, top_y, card_w, card_h, bg_color=CARD_BG, border_color=m_color, border_width=1.5)
 
-        tb = s1.shapes.add_textbox(x + Inches(0.15), top_y + Inches(0.15), card_w - Inches(0.3), Inches(3.6))
+        tb = s1.shapes.add_textbox(x + Inches(0.15), top_y + Inches(0.15), card_w - Inches(0.3), card_h - Inches(0.3))
         tf = tb.text_frame
         tf.word_wrap = True
 
         p1 = tf.paragraphs[0]
-        p1.text = m_title
+        p1.text = m_tag
         p1.font.size = Pt(11)
         p1.font.bold = True
         p1.font.color.rgb = m_color
 
         p2 = tf.add_paragraph()
-        p2.text = m_sub
+        p2.text = m_role
         p2.font.size = Pt(12)
         p2.font.bold = True
         p2.font.color.rgb = TEXT_LIGHT
+        p2.space_before = Pt(2)
         p2.space_after = Pt(8)
 
-        for line in m_desc.split("\n"):
-            p_line = tf.add_paragraph()
-            p_line.text = line
-            p_line.font.size = Pt(10)
-            p_line.font.color.rgb = TEXT_MUTED
+        for heading, desc in items:
+            ph = tf.add_paragraph()
+            ph.text = f"• {heading}:"
+            ph.font.size = Pt(9.5)
+            ph.font.bold = True
+            ph.font.color.rgb = m_color
+            ph.space_before = Pt(3)
 
-    # Bottom Meta
-    bottom_box = s1.shapes.add_textbox(Inches(0.8), Inches(6.8), Inches(11.7), Inches(0.4))
-    tf = bottom_box.text_frame
-    p = tf.paragraphs[0]
-    p.text = "Target Batch: B.Tech (CS / IT / CSAI / CSB) • Semester 3 • Official Live Link: https://se-ne6t-git-main-ddd-510a.vercel.app/login"
-    p.font.size = Pt(11)
-    p.font.color.rgb = TEXT_MUTED
+            pd = tf.add_paragraph()
+            pd.text = f"  {desc}"
+            pd.font.size = Pt(9)
+            pd.font.color.rgb = TEXT_MUTED
+
+    # Bottom Banner with Canonical Live Link
+    bottom_card = make_card(s1, Inches(0.8), Inches(6.75), Inches(11.733), Inches(0.55), bg_color=INNER_BG, border_color=BORDER_SUBTLE)
+    tb_b = s1.shapes.add_textbox(Inches(0.95), Inches(6.78), Inches(11.4), Inches(0.48))
+    tf_b = tb_b.text_frame
+    p_b = tf_b.paragraphs[0]
+    p_b.text = "🌐 Official Live Production URL: https://se-ne6t-git-main-ddd-510a.vercel.app/  •  GitHub Repository: github.com/kuldeeprohit2006-cmd/se"
+    p_b.font.size = Pt(11)
+    p_b.font.bold = True
+    p_b.font.color.rgb = ACCENT_GREEN
 
     # ==========================================
-    # SLIDE 2: PROBLEM STATEMENT & PROPOSED SOLUTION (MEMBER 1)
+    # SLIDE 2: PROBLEM STATEMENT & PROPOSED SOLUTION
     # ==========================================
-    s2 = prs.slides.add_slide(blank_slide_layout)
-    set_slide_bg(s2)
+    s2 = prs.slides.add_slide(blank_layout)
+    set_bg(s2)
+    add_header(s2, "SLIDE 02 / 05 • REQUIREMENT ANALYSIS", 
+               "Problem Statement & The MediGuard Solution Architecture", 
+               "Eliminating the Campus 'Golden Hour' Response Gap with Immediate Triage Telemetry", 
+               ACCENT_RED)
 
-    # Header
-    tb = s2.shapes.add_textbox(Inches(0.8), Inches(0.5), Inches(11.7), Inches(0.8))
-    tf = tb.text_frame
-    p = tf.paragraphs[0]
-    p.text = "01 | PROBLEM STATEMENT & PROPOSED SOLUTION"
-    p.font.size = Pt(12)
-    p.font.bold = True
-    p.font.color.rgb = ACCENT_RED
+    # Left: Problems
+    col_w = Inches(5.72)
+    make_card(s2, Inches(0.8), Inches(1.9), col_w, Inches(4.5), bg_color=CARD_BG, border_color=ACCENT_RED, border_width=1.5)
+    tb_p = s2.shapes.add_textbox(Inches(1.0), Inches(2.05), col_w - Inches(0.4), Inches(4.2))
+    tf_p = tb_p.text_frame
+    tf_p.word_wrap = True
 
-    p2 = tf.add_paragraph()
-    p2.text = "Eliminating the 'Golden Hour' Delay in Campus Emergencies"
-    p2.font.size = Pt(24)
-    p2.font.bold = True
-    p2.font.color.rgb = TEXT_LIGHT
-
-    # Left Column: Critical Campus Problems
-    add_card(s2, Inches(0.8), Inches(1.5), Inches(5.6), Inches(5.3), border_color=ACCENT_RED)
-    tb_prob = s2.shapes.add_textbox(Inches(1.0), Inches(1.7), Inches(5.2), Inches(4.9))
-    tf = tb_prob.text_frame
-    tf.word_wrap = True
-
-    p = tf.paragraphs[0]
-    p.text = "🚨 Critical Campus Failure Points"
-    p.font.size = Pt(16)
+    p = tf_p.paragraphs[0]
+    p.text = "🚨 Critical Failure Points in Traditional Campus Setup"
+    p.font.size = Pt(14)
     p.font.bold = True
     p.font.color.rgb = ACCENT_RED
     p.space_after = Pt(10)
 
-    problems = [
-        ("The 'Golden Hour' Panic", "Students waste 5–10 crucial minutes finding emergency numbers or conveying exact campus hostel/room locations."),
-        ("Bystander CPR Deficiency", "In sudden cardiac arrest, brain damage begins in 4 minutes. Untrained bystanders panic or apply compressions at incorrect tempos."),
-        ("No Campus Coordination", "Wardens and dispensaries receive zero telemetry on active medical situations until minutes or hours later."),
-        ("Medicine Contraindication Risks", "Students taking self-prescribed remedies without knowing fatal interactions (e.g., aspirin for kids or NSAIDs with ulcers).")
+    problem_list = [
+        ("The 'Golden Hour' Communication Delay", "In critical traumas or asthma attacks, students waste 5-10 minutes finding emergency phone numbers and explaining hostel locations."),
+        ("Bystander Panic & CPR Rhythm Deficiency", "In sudden cardiac arrest, brain tissue dies after 4 minutes. Untrained peers panic or compress at incorrect frequencies."),
+        ("Siloed Campus Healthcare Infrastructure", "Hostel wardens and dispensary teams receive zero real-time telemetry on active incidents until students manually arrive."),
+        ("Dangerous Self-Prescription Hazards", "Students administer over-the-counter painkillers without knowledge of fatal contraindications (e.g. aspirin in dengue or ulcers).")
     ]
-
-    for title, desc in problems:
-        pt = tf.add_paragraph()
+    for title, desc in problem_list:
+        pt = tf_p.add_paragraph()
         pt.text = "❌ " + title
-        pt.font.size = Pt(12)
+        pt.font.size = Pt(11)
         pt.font.bold = True
         pt.font.color.rgb = TEXT_LIGHT
+        pt.space_before = Pt(4)
 
-        pd = tf.add_paragraph()
+        pd = tf_p.add_paragraph()
         pd.text = desc
-        pd.font.size = Pt(10.5)
+        pd.font.size = Pt(9.5)
         pd.font.color.rgb = TEXT_MUTED
-        pd.space_after = Pt(6)
 
-    # Right Column: The MediGuard Solution
-    add_card(s2, Inches(6.8), Inches(1.5), Inches(5.7), Inches(5.3), border_color=ACCENT_GREEN)
-    tb_sol = s2.shapes.add_textbox(Inches(7.0), Inches(1.7), Inches(5.3), Inches(4.9))
-    tf = tb_sol.text_frame
-    tf.word_wrap = True
+    # Right: Solutions
+    make_card(s2, Inches(6.8), Inches(1.9), col_w, Inches(4.5), bg_color=CARD_BG, border_color=ACCENT_GREEN, border_width=1.5)
+    tb_s = s2.shapes.add_textbox(Inches(7.0), Inches(2.05), col_w - Inches(0.4), Inches(4.2))
+    tf_s = tb_s.text_frame
+    tf_s.word_wrap = True
 
-    p = tf.paragraphs[0]
-    p.text = "✅ The MediGuard Solution Architecture"
-    p.font.size = Pt(16)
+    p = tf_s.paragraphs[0]
+    p.text = "✅ Engineered Solution Matrix (MediGuard Innovation)"
+    p.font.size = Pt(14)
     p.font.bold = True
     p.font.color.rgb = ACCENT_GREEN
     p.space_after = Pt(10)
 
-    solutions = [
-        ("Automated IIITL Identity & Geolocation", "Instant regex parsing of student emails (LCS/LIT/LCI/LCB) with hostel zone tagging for zero-lookup dispatch."),
-        ("1-Touch SOS with 3s Abort Safety", "Audible countdown prevents prank alerts; automatically broadcasts ticket to central command when timer expires."),
-        ("Simulated Real Audio Operator Calling", "Native Web Audio API telephone dispatch with dual-tone multi-frequency and live dynamic waveform visualization."),
-        ("AHA-Compliant 110 BPM Metronome", "Auditory and optical compression guide maintaining optimal 100–120 compressions/min for adult cardiac arrest."),
-        ("Central Admin Command Center (/admin)", "Real-time triage dashboard for ambulance fleet readiness, incident resolution, and branch roster auditing.")
+    solution_list = [
+        ("Automated IIITL Identity & Zone Binding", "Regex parses student email (LCS/LIT/LCI/LCB), assigning hostel zone for instant zero-lookup dispatch."),
+        ("1-Touch SOS with 3-Second Abort Safety", "Audible countdown prevents accidental triggers; automatically broadcasts ticket to campus command when time elapses."),
+        ("Simulated Real Audio Calling & Waveform Visualizer", "Native browser Web Audio API synthesizes telephone tones (350+440 Hz) and dynamic visual audio waveforms."),
+        ("AHA-Compliant 110 BPM Compression Metronome", "Dual auditory and visual metronome keeps chest compressions locked at clinical 100-120 BPM tempo."),
+        ("Central Admin Incident Command Center (/admin)", "Wardens & doctors receive live incoming triage queues, dispatch campus ambulances, and view branch rosters.")
     ]
-
-    for title, desc in solutions:
-        pt = tf.add_paragraph()
+    for title, desc in solution_list:
+        pt = tf_s.add_paragraph()
         pt.text = "⚡ " + title
-        pt.font.size = Pt(12)
+        pt.font.size = Pt(11)
         pt.font.bold = True
         pt.font.color.rgb = TEXT_LIGHT
+        pt.space_before = Pt(4)
 
-        pd = tf.add_paragraph()
+        pd = tf_s.add_paragraph()
         pd.text = desc
-        pd.font.size = Pt(10.5)
+        pd.font.size = Pt(9.5)
         pd.font.color.rgb = TEXT_MUTED
-        pd.space_after = Pt(6)
+
+    # Bottom Metric Bar
+    make_card(s2, Inches(0.8), Inches(6.55), Inches(11.733), Inches(0.65), bg_color=INNER_BG, border_color=BORDER_SUBTLE)
+    metrics = [
+        ("< 3 SECONDS", "SOS Trigger Latency", ACCENT_RED),
+        ("110 BPM", "AHA CPR Compressions", ACCENT_GREEN),
+        ("ZERO ASSETS", "Web Audio Synthesizer", ACCENT_BLUE),
+        ("100% REGEX", "IIITL ID Auto-Mapping", ACCENT_PURPLE),
+        ("99.9% UPTIME", "Hybrid Cloud Storage", ACCENT_AMBER)
+    ]
+    m_w = Inches(11.733 / 5)
+    for i, (val, label, m_col) in enumerate(metrics):
+        tb_m = s2.shapes.add_textbox(Inches(0.8) + i * m_w, Inches(6.58), m_w, Inches(0.6))
+        tf_m = tb_m.text_frame
+        p_val = tf_m.paragraphs[0]
+        p_val.text = val
+        p_val.alignment = PP_ALIGN.CENTER
+        p_val.font.size = Pt(12)
+        p_val.font.bold = True
+        p_val.font.color.rgb = m_col
+
+        p_lbl = tf_m.add_paragraph()
+        p_lbl.text = label
+        p_lbl.alignment = PP_ALIGN.CENTER
+        p_lbl.font.size = Pt(8.5)
+        p_lbl.font.color.rgb = TEXT_MUTED
 
     # ==========================================
-    # SLIDE 3: SYSTEM ARCHITECTURE & 3-TIER FLOW (MEMBER 2 & 3)
+    # SLIDE 3: 4-TIER ARCHITECTURE & DATA FLOW
     # ==========================================
-    s3 = prs.slides.add_slide(blank_slide_layout)
-    set_slide_bg(s3)
+    s3 = prs.slides.add_slide(blank_layout)
+    set_bg(s3)
+    add_header(s3, "SLIDE 03 / 05 • SYSTEM DESIGN", 
+               "4-Tier Layered Architecture & Incident Flow Pipeline", 
+               "Client UI, Serverless Edge APIs, MongoDB Persistence & Cloud Containerization", 
+               ACCENT_BLUE)
 
-    tb = s3.shapes.add_textbox(Inches(0.8), Inches(0.5), Inches(11.7), Inches(0.8))
-    tf = tb.text_frame
-    p = tf.paragraphs[0]
-    p.text = "02 | SYSTEM ARCHITECTURE & DATA FLOW"
-    p.font.size = Pt(12)
-    p.font.bold = True
-    p.font.color.rgb = ACCENT_BLUE
-
-    p2 = tf.add_paragraph()
-    p2.text = "Cloud-Native 3-Tier Layered Architecture & Microservices"
-    p2.font.size = Pt(24)
-    p2.font.bold = True
-    p2.font.color.rgb = TEXT_LIGHT
-
-    # 4 Architecture Columns (Client Tier, API Tier, Database Tier, DevOps Tier)
     tiers = [
-        ("TIER 1: CLIENT LAYER", "React 19 + Vite SPA", [
-            "• Vite 8 Build Tool (Ultra-fast HMR)",
-            "• React Router 7 Client Navigation",
-            "• Web Audio API Synthesizer",
-            "• HTML5 Canvas Waveform Rendering",
-            "• Axios JWT Request Interceptors"
+        ("TIER 1: CLIENT LAYER", "React 19 + Vite 8", [
+            "• Vite 8 Build (Ultra-fast HMR & ESM)",
+            "• React Router 7 with SPA Fallback",
+            "• Web Audio API Telephone Synthesizer",
+            "• HTML5 Canvas Dynamic Waveform HUD",
+            "• Axios JWT Bearer Auth Interceptors"
         ], ACCENT_BLUE),
-        ("TIER 2: API & SERVERLESS", "Express.js Edge Runtime", [
-            "• REST API Routing & Controllers",
-            "• Vercel Multi-Service Edge Router",
+
+        ("TIER 2: API & LOGIC", "Express.js Serverless", [
+            "• Modular REST Endpoints (/api/auth, /incidents)",
+            "• Vercel Edge Serverless Deployment",
             "• JWT Token Verification Middleware",
-            "• Role-Based Access Control (RBAC)",
-            "• In-Memory Hybrid Resiliency Store"
+            "• Strict Role-Based Access Control (RBAC)",
+            "• In-Memory Resilient Sync Fallback Store"
         ], ACCENT_RED),
+
         ("TIER 3: PERSISTENCE", "MongoDB Atlas Cloud", [
-            "• Mongoose Object Data Modeling",
-            "• User Schema (IIITL Roll & Branch)",
+            "• Mongoose Schema Object Modeling",
+            "• User Schema with IIITL Branch & Roll",
             "• EmergencyIncident Ticket Queue",
-            "• Bcrypt Password Salting (12 rounds)",
-            "• Geospatial & Zone Tagging"
+            "• Bcrypt Password Hashing (12 rounds)",
+            "• Geolocation Campus Zone Tagging"
         ], ACCENT_GREEN),
-        ("TIER 4: INFRASTRUCTURE", "Docker & Kubernetes", [
-            "• Node.js 20 Lean Alpine Container",
-            "• Multi-Stage Nginx Frontend Image",
+
+        ("TIER 4: DEVOPS & K8S", "Docker & Kubernetes", [
+            "• Lean Alpine Docker Containers (~25 MB)",
+            "• Multi-Stage Nginx Frontend Production Image",
             "• Horizontal Pod Autoscaler (2-10 pods)",
-            "• Ingress Controller with Rate Limits",
-            "• Production Vercel CI/CD Auto-Deploy"
+            "• Nginx Ingress Controller with TLS",
+            "• Continuous Integration from GitHub main"
         ], ACCENT_PURPLE)
     ]
 
-    for i, (t_title, t_sub, t_items, t_color) in enumerate(tiers):
+    top_y = Inches(1.9)
+    card_h = Inches(4.1)
+    for i, (t_title, t_sub, items, t_color) in enumerate(tiers):
         x = start_x + i * (card_w + gap)
-        add_card(s3, x, Inches(1.5), card_w, Inches(4.3), border_color=t_color)
+        make_card(s3, x, top_y, card_w, card_h, bg_color=CARD_BG, border_color=t_color, border_width=1.5)
 
-        tb = s3.shapes.add_textbox(x + Inches(0.12), Inches(1.65), card_w - Inches(0.24), Inches(4.0))
+        tb = s3.shapes.add_textbox(x + Inches(0.12), top_y + Inches(0.15), card_w - Inches(0.24), card_h - Inches(0.3))
         tf = tb.text_frame
         tf.word_wrap = True
 
@@ -275,81 +352,81 @@ def create_presentation():
         p2.font.size = Pt(12)
         p2.font.bold = True
         p2.font.color.rgb = TEXT_LIGHT
+        p2.space_before = Pt(2)
         p2.space_after = Pt(8)
 
-        for item in t_items:
+        for item in items:
             pi = tf.add_paragraph()
             pi.text = item
             pi.font.size = Pt(9.5)
             pi.font.color.rgb = TEXT_MUTED
+            pi.space_before = Pt(3)
 
-    # Bottom Architecture Summary Box
-    add_card(s3, Inches(0.8), Inches(6.0), Inches(11.7), Inches(0.9), bg_color=CARD_BG, border_color=BORDER_COLOR)
-    tb_flow = s3.shapes.add_textbox(Inches(1.0), Inches(6.05), Inches(11.3), Inches(0.8))
-    tf = tb_flow.text_frame
-    p = tf.paragraphs[0]
-    p.text = "🔄 Level 1 Data Flow: Student SOS ➔ 3s Safety Filter ➔ JWT Injected Axios ➔ Vercel Multi-Service ➔ Express Routing ➔ MongoDB Write & Memory Sync ➔ Admin WebSocket/Polling HUD ➔ Ambulance Dispatched"
-    p.font.size = Pt(10.5)
+    # Bottom Level-1 Data Flow Sequence
+    make_card(s3, Inches(0.8), Inches(6.15), Inches(11.733), Inches(0.95), bg_color=INNER_BG, border_color=BORDER_SUBTLE)
+    tb_flow = s3.shapes.add_textbox(Inches(1.0), Inches(6.22), Inches(11.3), Inches(0.8))
+    tf_flow = tb_flow.text_frame
+    tf_flow.word_wrap = True
+
+    p = tf_flow.paragraphs[0]
+    p.text = "🔄 Level-1 Data Flow Pipeline (End-to-End Emergency Lifecycle):"
+    p.font.size = Pt(11)
     p.font.bold = True
-    p.font.color.rgb = TEXT_LIGHT
+    p.font.color.rgb = ACCENT_AMBER
 
-    # ==========================================
-    # SLIDE 4: KEY FEATURES & TECHNICAL INNOVATIONS (MEMBER 2 & 3)
-    # ==========================================
-    s4 = prs.slides.add_slide(blank_slide_layout)
-    set_slide_bg(s4)
-
-    tb = s4.shapes.add_textbox(Inches(0.8), Inches(0.5), Inches(11.7), Inches(0.8))
-    tf = tb.text_frame
-    p = tf.paragraphs[0]
-    p.text = "03 | KEY MODULES & TECHNICAL INNOVATIONS"
-    p.font.size = Pt(12)
-    p.font.bold = True
-    p.font.color.rgb = ACCENT_GREEN
-
-    p2 = tf.add_paragraph()
-    p2.text = "Feature Matrix: Campus Customization & Clinical Safety"
-    p2.font.size = Pt(24)
-    p2.font.bold = True
+    p2 = tf_flow.add_paragraph()
+    p2.text = "1. Student SOS Trigger ➔ 2. 3-Sec Safety Abort ➔ 3. JWT-Signed HTTP POST ➔ 4. Vercel Multi-Service Router ➔ 5. Express API Processing ➔ 6. MongoDB Atlas Atomic Insert ➔ 7. Admin Command HUD Broadcast ➔ 8. Ambulance AMB-101 Dispatched."
+    p2.font.size = Pt(10)
     p2.font.color.rgb = TEXT_LIGHT
+    p2.space_before = Pt(3)
+
+    # ==========================================
+    # SLIDE 4: TECHNICAL INNOVATIONS & FEATURE MATRIX
+    # ==========================================
+    s4 = prs.slides.add_slide(blank_layout)
+    set_bg(s4)
+    add_header(s4, "SLIDE 04 / 05 • TECHNICAL INNOVATIONS", 
+               "Core Modules, Identity Engine & Clinical Tools", 
+               "IIITL Regex Auto-Parsing, Zero-Asset Web Audio Synthesizer, Admin Command Center & First Aid", 
+               ACCENT_GREEN)
 
     feature_cards = [
         ("🎓 Automated IIITL Roll & Branch Parser", [
-            "• Regex Engine: ^([a-z]{3})2025(\\d{3})@iiitl\\.ac\\.in$",
-            "• Automatic Branch Mapping: LCS (CS), LIT (IT), LCI (CSAI), LCB (CSB).",
-            "• Dynamic Roll Support: Pre-configures roll range 1 to 60.",
-            "• Google OAuth Integration: Instant 1-click Google sign-in modal.",
-            "• Dual Mode: Accommodates both campus and normal Google accounts."
-        ], Inches(0.8), Inches(1.5), Inches(5.6), Inches(2.6), ACCENT_BLUE),
+            ("Regex Validation", "^([a-z]{3})2025(\\d{3})@iiitl\\.ac\\.in$"),
+            ("Branch Decoding", "LCS ➔ CS, LIT ➔ IT, LCI ➔ CSAI, LCB ➔ CSB."),
+            ("Roll Support", "Auto-validates roll range 1 to 60 for 2025 batch."),
+            ("Google Auth Modal", "1-click Google Sign-In with branch & roll picker."),
+            ("Dual Mode Auth", "Seamlessly supports both IIITL IDs and standard Gmail.")
+        ], Inches(0.8), Inches(1.9), Inches(5.72), Inches(2.35), ACCENT_BLUE),
 
-        ("📞 Zero-Asset Web Audio Calling System", [
-            "• Native AudioContext: Generates dialing, ringback & chimes.",
-            "• Zero Asset Dependencies: Works with zero MP3 downloads.",
-            "• Live Canvas Visualizer: Renders dynamic oscillating frequency waves.",
-            "• Conversational Operator Simulation: Interactive dispatcher prompts.",
-            "• Smartphone Bridge: Instant tel:108 / tel:112 direct trigger."
-        ], Inches(6.8), Inches(1.5), Inches(5.7), Inches(2.6), ACCENT_RED),
+        ("📞 Zero-Asset Web Audio Calling Synthesizer", [
+            ("Native Web Audio", "Generates dial tone, ringback & operator chimes in browser."),
+            ("Zero Audio Files", "100% code synthesized — zero MP3 downloads or Wi-Fi lag."),
+            ("Live Canvas HUD", "Dynamic sine waveform frequency visualizer during call."),
+            ("Operator Prompts", "Interactive guided dispatcher conversational simulator."),
+            ("Emergency Hotlink", "Instant fallback to native tel:108 / tel:112 phone dialer.")
+        ], Inches(6.8), Inches(1.9), Inches(5.72), Inches(2.35), ACCENT_RED),
 
         ("🛡️ Admin Incident Command Center (/admin)", [
-            "• Real-Time Triage HUD: Active, Dispatched & Resolved incident telemetry.",
-            "• One-Click Action Dispatch: Dispatches campus ambulance units.",
-            "• Fleet Management: Monitors AMB-101, AMB-102, AMB-108 ETAs.",
-            "• Student Roster Browser: Filters directory by branch & roll number.",
-            "• Role Security: Protected via adminOnly server middleware."
-        ], Inches(0.8), Inches(4.3), Inches(5.6), Inches(2.6), ACCENT_PURPLE),
+            ("Triage HUD", "Live counters for Active, Dispatched & Resolved campus incidents."),
+            ("1-Click Dispatch", "Dispatches on-campus emergency fleet with calculated ETAs."),
+            ("Fleet Monitor", "Tracks readiness for AMB-101, AMB-102 and Trauma ER units."),
+            ("Student Directory", "Roster explorer filtered by branch code and roll number."),
+            ("Role Guard", "Protected by server-side adminOnly JWT RBAC verification.")
+        ], Inches(0.8), Inches(4.45), Inches(5.72), Inches(2.45), ACCENT_PURPLE),
 
         ("❤️ Life Support Manual & Clinical Databases", [
-            "• CPR Metronome: 110 BPM acoustic pacer (AHA 2020 standard).",
-            "• First Aid Interactive Manual: Heimlich, burns, seizures, anaphylaxis.",
-            "• Blood Donor Registry: 8-group filter with compatibility matrix.",
-            "• Emergency Medicines: Symptom search, contraindications & dosages.",
-            "• Heart Attack Protocol: Emergency chewable aspirin guidelines."
-        ], Inches(6.8), Inches(4.3), Inches(5.7), Inches(2.6), ACCENT_GREEN)
+            ("CPR Metronome", "110 BPM acoustic pacer meeting AHA 2020 cardiac standard."),
+            ("First Aid Steps", "Illustrated guides for Choking (Heimlich), Burns, Anaphylaxis."),
+            ("Blood Registry", "8 blood group donors with red-cell compatibility matrix."),
+            ("Emergency Meds", "Dosages, symptoms, warnings & contraindications directory."),
+            ("Cardiac Alert", "Immediate protocol for chewable aspirin (325 mg) administration.")
+        ], Inches(6.8), Inches(4.45), Inches(5.72), Inches(2.45), ACCENT_GREEN)
     ]
 
     for title, points, x, y, w, h, color in feature_cards:
-        add_card(s4, x, y, w, h, border_color=color)
-        tb = s4.shapes.add_textbox(x + Inches(0.15), y + Inches(0.15), w - Inches(0.3), h - Inches(0.3))
+        make_card(s4, x, y, w, h, bg_color=CARD_BG, border_color=color, border_width=1.5)
+        tb = s4.shapes.add_textbox(x + Inches(0.18), y + Inches(0.14), w - Inches(0.36), h - Inches(0.28))
         tf = tb.text_frame
         tf.word_wrap = True
 
@@ -358,121 +435,158 @@ def create_presentation():
         p.font.size = Pt(12)
         p.font.bold = True
         p.font.color.rgb = color
-        p.space_after = Pt(6)
+        p.space_after = Pt(4)
 
-        for pt_str in points:
-            p_bullet = tf.add_paragraph()
-            p_bullet.text = pt_str
-            p_bullet.font.size = Pt(9.5)
-            p_bullet.font.color.rgb = TEXT_MUTED
+        for heading, desc in points:
+            ph = tf.add_paragraph()
+            ph.text = f"• {heading}: {desc}"
+            ph.font.size = Pt(9.3)
+            ph.font.color.rgb = TEXT_LIGHT
+            ph.space_before = Pt(2)
 
     # ==========================================
-    # SLIDE 5: DEVOPS, DEPLOYMENT & ROADMAP (MEMBER 4)
+    # SLIDE 5: DEVOPS, LIVE DEPLOYMENT & ROADMAP
     # ==========================================
-    s5 = prs.slides.add_slide(blank_slide_layout)
-    set_slide_bg(s5)
+    s5 = prs.slides.add_slide(blank_layout)
+    set_bg(s5)
+    add_header(s5, "SLIDE 05 / 05 • PRODUCTION & ROADMAP", 
+               "DevOps Orchestration, Live Production & Future Innovations", 
+               "Docker Containers, Kubernetes Manifests, Vercel Multi-Service & Telemedicine Roadmap", 
+               ACCENT_PURPLE)
 
-    tb = s5.shapes.add_textbox(Inches(0.8), Inches(0.5), Inches(11.7), Inches(0.8))
-    tf = tb.text_frame
-    p = tf.paragraphs[0]
-    p.text = "04 | DEVOPS, DEPLOYMENT & FUTURE ROADMAP"
-    p.font.size = Pt(12)
-    p.font.bold = True
-    p.font.color.rgb = ACCENT_PURPLE
+    col3_w = Inches(3.73)
+    col3_gap = Inches(0.27)
+    c1_x = Inches(0.8)
+    c2_x = c1_x + col3_w + col3_gap
+    c3_x = c2_x + col3_w + col3_gap
+    c_top = Inches(1.9)
+    c_h = Inches(4.5)
 
-    p2 = tf.add_paragraph()
-    p2.text = "Enterprise Scalability, Live Hosting & Innovation Roadmap"
-    p2.font.size = Pt(24)
-    p2.font.bold = True
-    p2.font.color.rgb = TEXT_LIGHT
+    # Col 1: DevOps & K8s
+    make_card(s5, c1_x, c_top, col3_w, c_h, bg_color=CARD_BG, border_color=ACCENT_RED, border_width=1.5)
+    tb_c1 = s5.shapes.add_textbox(c1_x + Inches(0.15), c_top + Inches(0.15), col3_w - Inches(0.3), c_h - Inches(0.3))
+    tf_c1 = tb_c1.text_frame
+    tf_c1.word_wrap = True
 
-    # 3 Bottom Columns
-    add_card(s5, Inches(0.8), Inches(1.5), Inches(3.7), Inches(5.3), border_color=ACCENT_RED)
-    tb_dep = s5.shapes.add_textbox(Inches(0.95), Inches(1.7), Inches(3.4), Inches(4.9))
-    tf = tb_dep.text_frame
-    tf.word_wrap = True
-
-    p = tf.paragraphs[0]
+    p = tf_c1.paragraphs[0]
     p.text = "🐳 Container & K8s Pipeline"
-    p.font.size = Pt(14)
+    p.font.size = Pt(13)
     p.font.bold = True
     p.font.color.rgb = ACCENT_RED
     p.space_after = Pt(8)
 
-    devops_items = [
-        "• Multi-Stage Docker Build:\n  Vite build ➔ Lean Nginx 1.25 Alpine (~25 MB production image).",
-        "• Backend Security:\n  Node 20 Alpine with dumb-init & non-root user execution.",
-        "• Kubernetes Cluster:\n  Deployments, ClusterIP Services & Nginx Ingress Controller.",
-        "• Horizontal Pod Autoscaler (HPA):\n  Dynamic auto-scaling between 2 and 10 pods at 70% CPU threshold.",
-        "• Zero-Downtime Rolling Updates:\n  maxSurge: 1, maxUnavailable: 0."
+    devops_bullets = [
+        ("Multi-Stage Docker", "Frontend built with Vite into lean Nginx Alpine (~25 MB). Backend on Node 20 Alpine with unprivileged user."),
+        ("Kubernetes Pods & HPA", "Horizontal Pod Autoscaler dynamically scales pods between 2 and 10 based on 70% CPU threshold."),
+        ("ClusterIP & Ingress", "Internal microservice routing with Nginx Ingress handling TLS termination and rate limiting."),
+        ("Zero-Downtime Deployment", "Rolling update strategy with maxSurge: 1 and maxUnavailable: 0 guarantees non-stop availability.")
     ]
-    for item in devops_items:
-        p_item = tf.add_paragraph()
-        p_item.text = item
-        p_item.font.size = Pt(9.5)
-        p_item.font.color.rgb = TEXT_MUTED
-        p_item.space_after = Pt(6)
+    for h, d in devops_bullets:
+        pt = tf_c1.add_paragraph()
+        pt.text = f"• {h}:"
+        pt.font.size = Pt(10)
+        pt.font.bold = True
+        pt.font.color.rgb = TEXT_LIGHT
+        pt.space_before = Pt(4)
 
-    # Middle: Live Deployment Status
-    add_card(s5, Inches(4.8), Inches(1.5), Inches(3.7), Inches(5.3), border_color=ACCENT_BLUE)
-    tb_live = s5.shapes.add_textbox(Inches(4.95), Inches(1.7), Inches(3.4), Inches(4.9))
-    tf = tb_live.text_frame
-    tf.word_wrap = True
+        pd = tf_c1.add_paragraph()
+        pd.text = f"  {d}"
+        pd.font.size = Pt(9)
+        pd.font.color.rgb = TEXT_MUTED
 
-    p = tf.paragraphs[0]
+    # Col 2: Live Production
+    make_card(s5, c2_x, c_top, col3_w, c_h, bg_color=CARD_BG, border_color=ACCENT_BLUE, border_width=1.5)
+    tb_c2 = s5.shapes.add_textbox(c2_x + Inches(0.15), c_top + Inches(0.15), col3_w - Inches(0.3), c_h - Inches(0.3))
+    tf_c2 = tb_c2.text_frame
+    tf_c2.word_wrap = True
+
+    p = tf_c2.paragraphs[0]
     p.text = "🌐 Live Production Status"
-    p.font.size = Pt(14)
+    p.font.size = Pt(13)
     p.font.bold = True
     p.font.color.rgb = ACCENT_BLUE
     p.space_after = Pt(8)
 
-    live_items = [
-        "• Vercel Multi-Service Hosting:\n  Live at: https://se-ne6t-git-main-ddd-510a.vercel.app/login",
-        "• GitHub Source Code:\n  Repository: kuldeeprohit2006-cmd/se",
-        "• Database Cluster:\n  MongoDB Atlas Replica Set with automated connection retry & IPv4 fallback.",
-        "• Zero CORS Architecture:\n  Frontend & Serverless Edge APIs co-located on identical host origin.",
-        "• Performance Benchmark:\n  Google Lighthouse Score > 90, sub-second First Contentful Paint."
+    live_bullets = [
+        ("Vercel Live URL", "se-ne6t-git-main-ddd-510a.vercel.app with automatic SPA rewrite and 404 fallback handling."),
+        ("GitHub Repository", "Synchronized on origin/main at github.com/kuldeeprohit2006-cmd/se with complete commit history."),
+        ("MongoDB Atlas Cluster", "Replica set with automated connection failover and IPv4 compatibility layers."),
+        ("Lighthouse & Security", "Sub-second First Contentful Paint, JWT Bearer authentication, and zero CORS mismatches.")
     ]
-    for item in live_items:
-        p_item = tf.add_paragraph()
-        p_item.text = item
-        p_item.font.size = Pt(9.5)
-        p_item.font.color.rgb = TEXT_MUTED
-        p_item.space_after = Pt(6)
+    for h, d in live_bullets:
+        pt = tf_c2.add_paragraph()
+        pt.text = f"• {h}:"
+        pt.font.size = Pt(10)
+        pt.font.bold = True
+        pt.font.color.rgb = TEXT_LIGHT
+        pt.space_before = Pt(4)
 
-    # Right: Future Scope
-    add_card(s5, Inches(8.8), Inches(1.5), Inches(3.7), Inches(5.3), border_color=ACCENT_GREEN)
-    tb_fut = s5.shapes.add_textbox(Inches(8.95), Inches(1.7), Inches(3.4), Inches(4.9))
-    tf = tb_fut.text_frame
-    tf.word_wrap = True
+        pd = tf_c2.add_paragraph()
+        pd.text = f"  {d}"
+        pd.font.size = Pt(9)
+        pd.font.color.rgb = TEXT_MUTED
 
-    p = tf.paragraphs[0]
-    p.text = "🚀 Future Roadmap"
-    p.font.size = Pt(14)
+    # Col 3: Future Roadmap
+    make_card(s5, c3_x, c_top, col3_w, c_h, bg_color=CARD_BG, border_color=ACCENT_GREEN, border_width=1.5)
+    tb_c3 = s5.shapes.add_textbox(c3_x + Inches(0.15), c_top + Inches(0.15), col3_w - Inches(0.3), c_h - Inches(0.3))
+    tf_c3 = tb_c3.text_frame
+    tf_c3.word_wrap = True
+
+    p = tf_c3.paragraphs[0]
+    p.text = "🚀 Future Innovation Roadmap"
+    p.font.size = Pt(13)
     p.font.bold = True
     p.font.color.rgb = ACCENT_GREEN
     p.space_after = Pt(8)
 
-    future_items = [
-        "• WebRTC Real Video Triage:\n  P2P video streaming with on-duty campus medical staff.",
-        "• Campus IoT Defibrillators:\n  Smart AED lockers that auto-unlock when cardiac arrest is reported in zone.",
-        "• Offline PWA Bluetooth Mesh:\n  Peer-to-peer relay for campus basement zones with zero cellular signal.",
-        "• Automated SMS/WhatsApp Gateways:\n  Instant automated SMS dispatch to hostel wardens & family contacts.",
-        "• Wearable Integration:\n  Heart rate anomaly detection via smartwatch telemetry."
+    future_bullets = [
+        ("WebRTC Video Triage", "Peer-to-peer live emergency camera connection between student bystander and on-call campus doctor."),
+        ("Smart IoT Defibrillators", "Automated campus locker release triggers whenever cardiac arrest SOS is dispatched to that hostel."),
+        ("Offline PWA Mesh Relay", "Bluetooth/Wi-Fi Direct mesh messaging for campus basement labs with zero cellular connectivity."),
+        ("Hostel Warden SMS Gateway", "Instant automated SMS alerts dispatching emergency coordinates to hostel caretakers.")
     ]
-    for item in future_items:
-        p_item = tf.add_paragraph()
-        p_item.text = item
-        p_item.font.size = Pt(9.5)
-        p_item.font.color.rgb = TEXT_MUTED
-        p_item.space_after = Pt(6)
+    for h, d in future_bullets:
+        pt = tf_c3.add_paragraph()
+        pt.text = f"• {h}:"
+        pt.font.size = Pt(10)
+        pt.font.bold = True
+        pt.font.color.rgb = TEXT_LIGHT
+        pt.space_before = Pt(4)
 
-    # Save presentation
-    output_dir = r"C:\Users\Sumsung\.gemini\antigravity\scratch\mediguard-mern\docs"
-    os.makedirs(output_dir, exist_ok=True)
-    output_path = os.path.join(output_dir, "MediGuard_Software_Engineering_Presentation.pptx")
-    prs.save(output_path)
-    print(f"Presentation saved successfully to: {output_path}")
+        pd = tf_c3.add_paragraph()
+        pd.text = f"  {d}"
+        pd.font.size = Pt(9)
+        pd.font.color.rgb = TEXT_MUTED
+
+    # Bottom Submission Bar
+    make_card(s5, Inches(0.8), Inches(6.55), Inches(11.733), Inches(0.65), bg_color=INNER_BG, border_color=BORDER_SUBTLE)
+    tb_sub = s5.shapes.add_textbox(Inches(0.95), Inches(6.6), Inches(11.4), Inches(0.55))
+    tf_sub = tb_sub.text_frame
+    p_sub = tf_sub.paragraphs[0]
+    p_sub.text = "📦 Submission Deliverables: 1. PPT (5 Slides) • 2. IEEE 830 SRS Document • 3. Source Code ZIP • 4. 4-Member Viva Defense Script"
+    p_sub.font.size = Pt(11)
+    p_sub.font.bold = True
+    p_sub.font.color.rgb = ACCENT_GREEN
+
+    # Save to 3 locations:
+    base_dir = r"C:\Users\Sumsung\.gemini\antigravity\scratch\mediguard-mern"
+    
+    # 1. docs/
+    p1 = os.path.join(base_dir, "docs", "MediGuard_Software_Engineering_Presentation.pptx")
+    prs.save(p1)
+    print(f"Saved: {p1}")
+
+    # 2. Project_Submission_Package/
+    sub_dir = os.path.join(base_dir, "Project_Submission_Package")
+    os.makedirs(sub_dir, exist_ok=True)
+    p2 = os.path.join(sub_dir, "MediGuard_Presentation_4_Slides.pptx")
+    prs.save(p2)
+    print(f"Saved: {p2}")
+
+    # 3. Root directory (immediately accessible on GitHub)
+    p3 = os.path.join(base_dir, "MediGuard_Presentation_Google_Slides.pptx")
+    prs.save(p3)
+    print(f"Saved: {p3}")
 
 if __name__ == "__main__":
-    create_presentation()
+    create_beautiful_presentation()

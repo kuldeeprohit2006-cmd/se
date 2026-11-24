@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -16,6 +16,18 @@ import FirstAid from './pages/FirstAid';
 import Medicines from './pages/Medicines';
 import AdminPortal from './pages/AdminPortal';
 
+function SpaRedirectHandler() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    const redirect = sessionStorage.getItem('mediguard_spa_redirect');
+    if (redirect) {
+      sessionStorage.removeItem('mediguard_spa_redirect');
+      navigate(redirect, { replace: true });
+    }
+  }, [navigate]);
+  return null;
+}
+
 function App() {
   const [sosOpen, setSosOpen] = useState(false);
   const [callModalOpen, setCallModalOpen] = useState(false);
@@ -29,6 +41,7 @@ function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        <SpaRedirectHandler />
         <div className="app-layout">
           <Navbar
             onOpenSOS={() => setSosOpen(true)}

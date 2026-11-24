@@ -1,6 +1,7 @@
 # 🛡️ MediGuard - Student Campus Emergency & Health Response System
 
-> **Live Production Deployment:** [https://se-ne6t-git-main-ddd-510a.vercel.app/login](https://se-ne6t-git-main-ddd-510a.vercel.app/login)  
+> **Live Production Deployment:** [https://se-ne6t-git-main-ddd-510a.vercel.app/](https://se-ne6t-git-main-ddd-510a.vercel.app/)  
+> **Google Slides Presentation:** [MediGuard_Presentation_Google_Slides.pptx](MediGuard_Presentation_Google_Slides.pptx)  
 > Designed for **IIIT Lucknow** (`@iiitl.ac.in`) & Campus Student Health Safety.
 
 ---

@@ -160,7 +160,7 @@
 ---
 
 ## 🌐 OFFICIAL DEPLOYMENT & ARTIFACT LINKS
-- **Live Vercel Production Link:** [https://se-ne6t-git-main-ddd-510a.vercel.app/login](https://se-ne6t-git-main-ddd-510a.vercel.app/login)
+- **Live Vercel Production Link:** [https://se-ne6t-git-main-ddd-510a.vercel.app/](https://se-ne6t-git-main-ddd-510a.vercel.app/)
 - **Public GitHub Repository:** [https://github.com/kuldeeprohit2006-cmd/se](https://github.com/kuldeeprohit2006-cmd/se)
 - **Demo Student Login:** `lcs2025044@iiitl.ac.in` (Password: `Student@123`)
 - **Demo Admin Login:** `admin@iiitl.ac.in` (Password: `Admin@123`)

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MediGuard - Redirecting...</title>
+    <script>
+      // Single Page App redirect for deep paths on static edge servers
+      const path = window.location.pathname;
+      const search = window.location.search;
+      const hash = window.location.hash;
+      // Store redirect target in session storage and bounce to root
+      if (path && path !== '/') {
+        sessionStorage.setItem('mediguard_spa_redirect', path + search + hash);
+      }
+      window.location.replace('/' + (hash || ''));
+    </script>
+  </head>
+  <body style="background:#0C0E17; color:#fff; font-family:sans-serif; display:flex; align-items:center; justify-content:center; height:100vh; margin:0;">
+    <div style="text-align:center;">
+      <h2 style="color:#FF2D55;">🚨 MediGuard Emergency Portal</h2>
+      <p style="color:#9AA5BE;">Redirecting to secure application...</p>
+    </div>
+  </body>
+</html>
