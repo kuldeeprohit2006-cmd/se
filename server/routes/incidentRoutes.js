@@ -3,23 +3,25 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const EmergencyIncident = require('../models/EmergencyIncident');
 const storage = require('../services/storageService');
-const { protect, adminOnly } = require('../middleware/authMiddleware');
+const { protect, optionalProtect } = require('../middleware/authMiddleware');
 
 const isDbConnected = () => mongoose.connection && mongoose.connection.readyState === 1;
+const isValidObjectId = (id) => Boolean(id && mongoose.Types.ObjectId.isValid(String(id)));
 
-// POST /api/incidents - Trigger a new SOS Emergency
-router.post('/', protect, async (req, res) => {
+// POST /api/incidents - Trigger a new SOS Emergency (works authenticated or anonymous in crisis)
+router.post('/', optionalProtect, async (req, res) => {
   try {
-    const { campusZone, emergencyType, priority, gpsCoordinates, notes, studentPhone } = req.body;
+    const { campusZone, emergencyType, priority, gpsCoordinates, notes, studentPhone } = req.body || {};
+    const user = req.user || {};
 
     const incidentData = {
-      student: req.user._id,
-      studentName: req.user.name,
-      studentEmail: req.user.email,
-      studentRollNo: req.user.rollNo || '',
-      studentBranch: req.user.branch || 'General',
-      studentPhone: studentPhone || req.user.phone || '108 / Campus Security',
-      campusZone: campusZone || req.user.campusLocation || 'Academic Block - Ground Floor',
+      student: isValidObjectId(user._id) ? user._id : undefined,
+      studentName: user.name || 'Campus Student (Quick SOS)',
+      studentEmail: user.email || 'sos@iiitl.ac.in',
+      studentRollNo: user.rollNo || '',
+      studentBranch: user.branch || 'General',
+      studentPhone: studentPhone || user.phone || '108 / Campus Security',
+      campusZone: campusZone || user.campusLocation || 'Academic Block - Ground Floor',
       emergencyType: emergencyType || 'Cardiac Arrest / CPR Needed',
       priority: priority || 'CRITICAL',
       status: 'TRIGGERED',
@@ -29,9 +31,14 @@ router.post('/', protect, async (req, res) => {
 
     let incident;
     if (isDbConnected()) {
-      incident = await EmergencyIncident.create(incidentData);
+      try {
+        incident = await EmergencyIncident.create(incidentData);
+      } catch (dbErr) {
+        console.warn('Mongo incident write fallback:', dbErr.message);
+        incident = storage.addIncident({ ...incidentData, student: user._id || 'anon_sos' });
+      }
     } else {
-      incident = storage.addIncident(incidentData);
+      incident = storage.addIncident({ ...incidentData, student: user._id || 'anon_sos' });
     }
 
     res.status(201).json({
@@ -52,11 +59,13 @@ router.get('/', protect, async (req, res) => {
     if (isDbConnected()) {
       let query = {};
       if (req.user.role !== 'admin') {
-        query.student = req.user._id;
+        query = isValidObjectId(req.user._id)
+          ? { $or: [{ student: req.user._id }, { studentEmail: req.user.email }] }
+          : { studentEmail: req.user.email };
       }
       incidents = await EmergencyIncident.find(query).sort({ createdAt: -1 }).limit(50);
     }
-    
+
     if (incidents.length === 0) {
       incidents = storage.getIncidents(req.user);
     }
@@ -71,10 +80,10 @@ router.get('/', protect, async (req, res) => {
 // PATCH /api/incidents/:id/status - Update incident status
 router.patch('/:id/status', protect, async (req, res) => {
   try {
-    const { status, dispatcherNotes } = req.body;
-    let incident;
+    const { status, dispatcherNotes } = req.body || {};
+    let incident = null;
 
-    if (isDbConnected()) {
+    if (isDbConnected() && isValidObjectId(req.params.id)) {
       const updateData = {};
       if (status) {
         updateData.status = status;
@@ -101,13 +110,13 @@ router.patch('/:id/status', protect, async (req, res) => {
   }
 });
 
-// POST /api/incidents/:id/call - Connect simulated audio dispatch call
-router.post('/:id/call', protect, async (req, res) => {
+// POST /api/incidents/:id/call - Log dispatch call session
+router.post('/:id/call', optionalProtect, async (req, res) => {
   try {
     const callSessionId = `DISPATCH-CALL-${Date.now()}`;
-    let incident;
+    let incident = null;
 
-    if (isDbConnected()) {
+    if (isDbConnected() && isValidObjectId(req.params.id)) {
       incident = await EmergencyIncident.findByIdAndUpdate(
         req.params.id,
         {
@@ -135,7 +144,7 @@ router.post('/:id/call', protect, async (req, res) => {
 });
 
 // POST /api/incidents/call-bridge - Real Telephony API (Twilio) + WebRTC Call Room Generator
-router.post('/call-bridge', protect, async (req, res) => {
+router.post('/call-bridge', optionalProtect, async (req, res) => {
   try {
     const { toNumber = '108', campusZone = 'Campus' } = req.body || {};
     const roomId = `MediGuard-IIITL-${Date.now().toString(36)}`;

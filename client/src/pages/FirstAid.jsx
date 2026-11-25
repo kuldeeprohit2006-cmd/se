@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import API from '../api/axios';
+import soundFX from '../utils/audioFX';
 
 const FirstAid = ({ onOpenSOS }) => {
   const [guides, setGuides] = useState([]);
@@ -15,10 +16,12 @@ const FirstAid = ({ onOpenSOS }) => {
       setLoading(true);
       try {
         const res = await API.get(`/firstaid?category=${selectedCategory}`);
-        setGuides(res.data.data);
-        if (res.data.data.length > 0 && !activeGuide) {
-          setActiveGuide(res.data.data[0]);
-        }
+        const list = res.data.data || [];
+        setGuides(list);
+        setActiveGuide((prev) => {
+          if (list.length === 0) return null;
+          return list.find((g) => g.id === prev?.id) || list[0];
+        });
       } catch (err) {
         setError('Failed to fetch first aid guides.');
       } finally {
@@ -28,12 +31,18 @@ const FirstAid = ({ onOpenSOS }) => {
     fetchGuides();
   }, [selectedCategory]);
 
-  // CPR Metronome Effect (110 BPM = approx 545ms interval)
+  // CPR Metronome Effect (110 BPM = approx 545ms interval) with real audio pulse
   useEffect(() => {
     let interval = null;
     if (metronomeActive) {
+      soundFX.playCountdownBeep(true);
+      setBpmCount(1);
       interval = setInterval(() => {
-        setBpmCount((prev) => (prev % 30) + 1);
+        setBpmCount((prev) => {
+          const next = (prev % 30) + 1;
+          soundFX.playCountdownBeep(next === 1);
+          return next;
+        });
       }, 545);
     } else {
       setBpmCount(0);

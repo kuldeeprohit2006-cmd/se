@@ -4,9 +4,25 @@ const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const storage = require('../services/storageService');
 
-// Generate JWT token
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET || 'mediguard_super_secret_jwt_key_2024', { expiresIn: '7d' });
+// Generate stateless JWT token containing user claims for serverless resilience
+const generateToken = (userOrId) => {
+  const payload =
+    typeof userOrId === 'object' && userOrId !== null
+      ? {
+          id: userOrId._id,
+          email: userOrId.email,
+          name: userOrId.name,
+          role: userOrId.role,
+          college: userOrId.college,
+          branch: userOrId.branch,
+          branchCode: userOrId.branchCode,
+          rollNo: userOrId.rollNo,
+          batch: userOrId.batch,
+          campusLocation: userOrId.campusLocation
+        }
+      : { id: userOrId };
+
+  return jwt.sign(payload, process.env.JWT_SECRET || 'mediguard_super_secret_jwt_key_2024', { expiresIn: '7d' });
 };
 
 const isDbConnected = () => mongoose.connection && mongoose.connection.readyState === 1;
@@ -61,7 +77,7 @@ const register = async (req, res) => {
       user = storage.addUser({ ...userData, password: hashedPassword });
     }
 
-    const token = generateToken(user._id);
+    const token = generateToken(user);
 
     res.status(201).json({
       success: true,
@@ -121,7 +137,7 @@ const login = async (req, res) => {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
-    const token = generateToken(user._id);
+    const token = generateToken(user);
 
     res.json({
       success: true,
@@ -192,7 +208,7 @@ const googleAuth = async (req, res) => {
       }
     }
 
-    const token = generateToken(user._id);
+    const token = generateToken(user);
 
     res.json({
       success: true,

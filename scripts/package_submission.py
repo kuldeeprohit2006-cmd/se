@@ -36,7 +36,7 @@ def package_submission():
         for root, dirs, files in os.walk(base_dir):
             dirs[:] = [d for d in dirs if d not in exclude_dirs]
             for file in files:
-                if file.endswith((".log", ".tmp")):
+                if file.endswith((".log", ".tmp")) or file == ".env" or file.startswith(".env.") and not file.endswith(".example"):
                     continue
                 file_path = os.path.join(root, file)
                 arcname = os.path.relpath(file_path, base_dir)

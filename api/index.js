@@ -6,7 +6,7 @@ const path = require('path');
 dotenv.config({ path: path.join(__dirname, '../server/.env') });
 
 const connectDB = require('../server/config/db');
-connectDB();
+const dbReadyPromise = connectDB();
 
 const app = express();
 
@@ -15,6 +15,16 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
+
+// Ensure initial MongoDB connection attempt settles once before route handlers execute
+app.use(async (req, res, next) => {
+  try {
+    await dbReadyPromise;
+  } catch {
+    // storageService fallback handles DB-unavailable periods
+  }
+  next();
+});
 
 // Mount API routes
 app.use('/api/auth', require('../server/routes/authRoutes'));

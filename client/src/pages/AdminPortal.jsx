@@ -173,13 +173,13 @@ const AdminPortal = ({ onStartCall }) => {
                 </thead>
                 <tbody>
                   {incidents.map((inc) => (
-                    <tr key={inc._id} className={`incident-row ${inc.status.toLowerCase()}`}>
+                    <tr key={inc._id} className={`incident-row ${(inc.status || 'TRIGGERED').toLowerCase()}`}>
                       <td>
                         <strong>{inc.studentName}</strong>
                         <span className="table-sub">{inc.studentEmail}</span>
                       </td>
                       <td>
-                        <span className={`branch-chip ${inc.studentBranch?.toLowerCase()}`}>
+                        <span className={`branch-chip ${inc.studentBranch?.toLowerCase() || 'general'}`}>
                           {inc.studentBranch || 'General'}
                         </span>
                         <span className="roll-tag">Roll {inc.studentRollNo || '—'}</span>
@@ -191,8 +191,8 @@ const AdminPortal = ({ onStartCall }) => {
                         <span className="emergency-type-text">{inc.emergencyType}</span>
                       </td>
                       <td>
-                        <span className={`status-pill ${inc.status.toLowerCase()}`}>
-                          {inc.status}
+                        <span className={`status-pill ${(inc.status || 'TRIGGERED').toLowerCase()}`}>
+                          {inc.status || 'TRIGGERED'}
                         </span>
                       </td>
                       <td>

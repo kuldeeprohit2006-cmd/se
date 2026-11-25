@@ -33,6 +33,29 @@ const SOSModal = ({ isOpen, onClose, onStartCall }) => {
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const triggerSOSBroadcast = async () => {
+    setCountdownActive(false);
+    setLoading(true);
+    soundFX.playCountdownBeep(true);
+
+    try {
+      const res = await API.post('/incidents', {
+        campusZone,
+        emergencyType,
+        priority: 'CRITICAL',
+        gpsCoordinates: { lat: 26.8016, lng: 81.0242 }
+      });
+      setIncidentData(res.data.incident);
+      setBroadcastSent(true);
+      soundFX.playConnectChime();
+    } catch (e) {
+      console.error('Failed to broadcast SOS incident', e);
+      setBroadcastSent(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (!isOpen) {
       setCountdown(3);
@@ -57,33 +80,9 @@ const SOSModal = ({ isOpen, onClose, onStartCall }) => {
       }, 1000);
       return () => clearTimeout(timer);
     } else if (countdown === 0) {
-      // Trigger broadcast
       triggerSOSBroadcast();
     }
   }, [countdown, countdownActive]);
-
-  const triggerSOSBroadcast = async () => {
-    setCountdownActive(false);
-    setLoading(true);
-    soundFX.playCountdownBeep(true);
-
-    try {
-      const res = await API.post('/incidents', {
-        campusZone,
-        emergencyType,
-        priority: 'CRITICAL',
-        gpsCoordinates: { lat: 26.8016, lng: 81.0242 }
-      });
-      setIncidentData(res.data.incident);
-      setBroadcastSent(true);
-      soundFX.playConnectChime();
-    } catch (e) {
-      console.error('Failed to broadcast SOS incident', e);
-      setBroadcastSent(true);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleCancelCountdown = () => {
     setCountdownActive(false);

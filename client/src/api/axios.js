@@ -14,7 +14,7 @@ API.interceptors.response.use(
   (response) => response,
   (error) => {
     const url = error.config?.url || '';
-    const isAuthRoute = url.includes('/auth/login') || url.includes('/auth/google') || url.includes('/auth/register');
+    const isAuthRoute = url.includes('/auth/login') || url.includes('/auth/google') || url.includes('/auth/register') || url.includes('/auth/me');
     
     if (error.response?.status === 401 && !isAuthRoute) {
       localStorage.removeItem('mediguard_token');

@@ -70,58 +70,67 @@ const Ambulance = ({ onOpenSOS }) => {
 
           <div className="ambulance-grid">
             {activeTab === 'national' &&
-              data.national?.map((item) => (
-                <div key={item.id} className="contact-card border-emergency">
-                  <div className="card-top-row">
-                    <span className="badge-critical">{item.type}</span>
-                    <span className="meta-time">⏱️ {item.responseTime}</span>
+              data.national?.map((item, idx) => {
+                const phone = item.phone || item.number || '108';
+                return (
+                  <div key={item.id || idx} className="contact-card border-emergency">
+                    <div className="card-top-row">
+                      <span className="badge-critical">{item.type || item.org || 'EMERGENCY'}</span>
+                      <span className="meta-time">⏱️ {item.responseTime || item.city}</span>
+                    </div>
+                    <h3>{item.name}</h3>
+                    <p className="card-desc">{item.desc || `${item.org} • ${item.city}`}</p>
+                    <div className="card-phone-section">
+                      <span className="phone-display">{phone}</span>
+                      <a href={`tel:${phone.replace(/[^0-9+]/g, '')}`} className="btn-call-action">
+                        📞 Call {phone}
+                      </a>
+                    </div>
                   </div>
-                  <h3>{item.name}</h3>
-                  <p className="card-desc">{item.desc}</p>
-                  <div className="card-phone-section">
-                    <span className="phone-display">{item.phone}</span>
-                    <a href={`tel:${item.phone.replace(/[^0-9]/g, '')}`} className="btn-call-action">
-                      📞 Call {item.phone}
-                    </a>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
 
             {activeTab === 'campus' &&
-              data.campus?.map((item) => (
-                <div key={item.id} className="contact-card border-campus">
-                  <div className="card-top-row">
-                    <span className="badge-campus">{item.type}</span>
-                    <span className="meta-time">⏱️ {item.responseTime}</span>
+              data.campus?.map((item, idx) => {
+                const phone = item.phone || item.number || '108';
+                return (
+                  <div key={item.id || idx} className="contact-card border-campus">
+                    <div className="card-top-row">
+                      <span className="badge-campus">{item.type || 'CAMPUS'}</span>
+                      <span className="meta-time">⏱️ {item.responseTime || '2 mins'}</span>
+                    </div>
+                    <h3>{item.name}</h3>
+                    <p className="card-desc">{item.desc}</p>
+                    <div className="card-phone-section">
+                      <span className="phone-display">{phone}</span>
+                      <a href={`tel:${phone.replace(/[^0-9+]/g, '')}`} className="btn-call-action btn-campus">
+                        📞 Call {phone}
+                      </a>
+                    </div>
                   </div>
-                  <h3>{item.name}</h3>
-                  <p className="card-desc">{item.desc}</p>
-                  <div className="card-phone-section">
-                    <span className="phone-display">{item.phone}</span>
-                    <a href={`tel:${item.phone.replace(/[^0-9]/g, '')}`} className="btn-call-action btn-campus">
-                      📞 Call {item.phone}
-                    </a>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
 
             {activeTab === 'hospitals' &&
-              data.hospitals?.map((item) => (
-                <div key={item.id} className="contact-card border-hospital">
-                  <div className="card-top-row">
-                    <span className="badge-hospital">{item.city}</span>
-                    <span className="meta-time">📍 {item.type}</span>
+              data.hospitals?.map((item, idx) => {
+                const phone = item.phone || item.number || '108';
+                return (
+                  <div key={item.id || idx} className="contact-card border-hospital">
+                    <div className="card-top-row">
+                      <span className="badge-hospital">{item.city || 'Lucknow'}</span>
+                      <span className="meta-time">📍 {item.type || 'TRAUMA ER'}</span>
+                    </div>
+                    <h3>{item.name}</h3>
+                    <p className="card-desc">{item.desc}</p>
+                    <div className="card-phone-section">
+                      <span className="phone-display">{phone}</span>
+                      <a href={`tel:${phone.replace(/[^0-9+]/g, '')}`} className="btn-call-action btn-hospital">
+                        📞 Call ER {phone}
+                      </a>
+                    </div>
                   </div>
-                  <h3>{item.name}</h3>
-                  <p className="card-desc">{item.desc}</p>
-                  <div className="card-phone-section">
-                    <span className="phone-display">{item.phone}</span>
-                    <a href={`tel:${item.phone.replace(/[^0-9]/g, '')}`} className="btn-call-action btn-hospital">
-                      📞 Call ER {item.phone}
-                    </a>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
           </div>
 
           <div className="emergency-notice-panel">

@@ -1,4 +1,4 @@
-// In-memory robust fallback store when MongoDB Atlas connection is in transition
+// In-memory robust fallback store when MongoDB Atlas connection is unavailable
 const bcrypt = require('bcryptjs');
 
 class StorageService {
@@ -8,10 +8,11 @@ class StorageService {
     this.initDemoAccounts();
   }
 
-  async initDemoAccounts() {
-    const salt = await bcrypt.genSalt(10);
-    const studentHash = await bcrypt.hash('Student@123', salt);
-    const adminHash = await bcrypt.hash('Admin@123', salt);
+  initDemoAccounts() {
+    // Synchronous hashing guarantees demo accounts are ready immediately on serverless cold start
+    const salt = bcrypt.genSaltSync(10);
+    const studentHash = bcrypt.hashSync('Student@123', salt);
+    const adminHash = bcrypt.hashSync('Admin@123', salt);
 
     const defaultUsers = [
       {
@@ -106,7 +107,6 @@ class StorageService {
       this.users.set(u.email, u);
     }
 
-    // Default emergency incident for Admin view
     this.incidents.push({
       _id: 'inc_sample_01',
       student: 'usr_lcs_044',
@@ -145,8 +145,8 @@ class StorageService {
   }
 
   getAllStudents(filter = {}) {
-    const list = Array.from(this.users.values()).filter(u => u.role === 'student');
-    return list.filter(u => {
+    const list = Array.from(this.users.values()).filter((u) => u.role === 'student');
+    return list.filter((u) => {
       if (filter.branch && filter.branch !== 'all' && u.branch !== filter.branch) return false;
       if (filter.branchCode && filter.branchCode !== 'all' && u.branchCode !== filter.branchCode) return false;
       if (filter.rollNo && u.rollNo !== filter.rollNo) return false;
@@ -162,12 +162,12 @@ class StorageService {
   }
 
   getIncidents(user) {
-    if (user.role === 'admin') return this.incidents;
-    return this.incidents.filter(inc => String(inc.student) === String(user._id) || inc.studentEmail === user.email);
+    if (!user || user.role === 'admin') return this.incidents;
+    return this.incidents.filter((inc) => String(inc.student) === String(user._id) || inc.studentEmail === user.email);
   }
 
   updateIncidentStatus(id, status, notes) {
-    const inc = this.incidents.find(i => String(i._id) === String(id));
+    const inc = this.incidents.find((i) => String(i._id) === String(id));
     if (!inc) return null;
     if (status) {
       inc.status = status;

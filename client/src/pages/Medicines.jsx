@@ -12,11 +12,13 @@ const Medicines = ({ onOpenSOS }) => {
     const fetchMeds = async () => {
       setLoading(true);
       try {
-        const res = await API.get(`/medicines?search=${search}`);
-        setMedicines(res.data.data);
-        if (res.data.data.length > 0 && !selectedMed) {
-          setSelectedMed(res.data.data[0]);
-        }
+        const res = await API.get(`/medicines?search=${encodeURIComponent(search)}`);
+        const list = res.data.data || [];
+        setMedicines(list);
+        setSelectedMed((prev) => {
+          if (list.length === 0) return null;
+          return list.find((m) => m.id === prev?.id) || list[0];
+        });
       } catch (err) {
         setError('Failed to fetch medicine data.');
       } finally {

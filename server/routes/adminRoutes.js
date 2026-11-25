@@ -11,25 +11,32 @@ const isDbConnected = () => mongoose.connection && mongoose.connection.readyStat
 // GET /api/admin/stats - Admin Command telemetry
 router.get('/stats', protect, adminOnly, async (req, res) => {
   try {
-    let totalStudents = 5;
-    let activeIncidents = 1;
+    let totalStudents = 0;
+    let activeIncidents = 0;
     let resolvedIncidents = 0;
-    let branchBreakdown = [
-      { _id: 'CS', count: 1 },
-      { _id: 'IT', count: 1 },
-      { _id: 'CSAI', count: 1 },
-      { _id: 'CSB', count: 1 }
-    ];
+    let branchBreakdown = [];
 
     if (isDbConnected()) {
       totalStudents = await User.countDocuments({ role: 'student' });
       activeIncidents = await EmergencyIncident.countDocuments({ status: { $in: ['TRIGGERED', 'DISPATCHED'] } });
       resolvedIncidents = await EmergencyIncident.countDocuments({ status: 'RESOLVED' });
-      const agg = await User.aggregate([
+      branchBreakdown = await User.aggregate([
         { $match: { role: 'student' } },
         { $group: { _id: '$branch', count: { $sum: 1 } } }
       ]);
-      if (agg.length > 0) branchBreakdown = agg;
+    } else {
+      const students = storage.getAllStudents();
+      const allIncidents = storage.getIncidents({ role: 'admin' });
+      totalStudents = students.length;
+      activeIncidents = allIncidents.filter((i) => ['TRIGGERED', 'DISPATCHED'].includes(i.status)).length;
+      resolvedIncidents = allIncidents.filter((i) => i.status === 'RESOLVED').length;
+
+      const counts = {};
+      for (const s of students) {
+        const b = s.branch || 'General';
+        counts[b] = (counts[b] || 0) + 1;
+      }
+      branchBreakdown = Object.entries(counts).map(([k, count]) => ({ _id: k, count }));
     }
 
     res.json({
@@ -44,7 +51,7 @@ router.get('/stats', protect, adminOnly, async (req, res) => {
         ambulanceFleet: [
           { id: 'AMB-101', status: 'AVAILABLE', location: 'IIITL Main Gate 1', eta: '2 mins' },
           { id: 'AMB-102', status: 'ON_STANDBY', location: 'Campus Health Dispensary', eta: '1 min' },
-          { id: 'AMB-108', status: 'DISPATCH_READY', location: 'District Trauma Center', eta: '7 mins' }
+          { id: 'AMB-108', status: 'DISPATCH_READY', location: 'Medanta / Lucknow Trauma', eta: '10 mins' }
         ]
       }
     });
@@ -78,6 +85,15 @@ router.get('/students', protect, adminOnly, async (req, res) => {
 
     if (students.length === 0) {
       students = storage.getAllStudents({ branch, branchCode, rollNo });
+      if (search) {
+        const q = search.toLowerCase();
+        students = students.filter(
+          (s) =>
+            s.name?.toLowerCase().includes(q) ||
+            s.email?.toLowerCase().includes(q) ||
+            s.rollNo?.toLowerCase().includes(q)
+        );
+      }
     }
 
     res.json({ success: true, count: students.length, data: students });
