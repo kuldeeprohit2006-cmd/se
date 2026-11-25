@@ -110,11 +110,11 @@ def generate_batch():
          "x": 30, "y": 66, "width": 660, "height": 20, "font_size": 11, "color": "#9CA9C4", "font_family": "Roboto"},
 
         {"op": "add-textbox", "slide": "SLIDE_3", 
-         "text": "🎓 Automated IIITL Roll & Branch Parser\n• Regex: ^([a-z]{3})2025(\\d{3})@iiitl\\.ac\\.in$\n• Branch Mapping: LCS (CS), LIT (IT), LCI (CSAI), LCB (CSB).\n• Roll Support: Auto-validates roll range 1 to 60.\n• Google Sign-In: 1-click modal with campus branch selector.\n• Dual Mode: Supports both college emails and standard Gmail.", 
+         "text": "🎓 Real Google OAuth 2.0 & IIITL Roll Engine\n• Google Identity Services: Real accounts.google.com popup.\n• Real JWT Decoding: Extracts email, verified name & photo.\n• IIITL Regex: Auto-binds LCS, LIT, LCI, LCB (Rolls 1-60).\n• Dual Mode: Supports campus @iiitl.ac.in & personal Gmail.\n• High Resilience: Fail-safe session fallback prevents lockouts.", 
          "x": 30, "y": 92, "width": 320, "height": 135, "font_size": 9.5, "color": "#FFFFFF", "background_color": "#161D2F", "font_family": "Roboto", "line_spacing": 125},
 
         {"op": "add-textbox", "slide": "SLIDE_3", 
-         "text": "📞 Zero-Asset Web Audio Calling Synthesizer\n• Native AudioContext: Synthesizes dial tone, ringback & chimes.\n• 100% Zero MP3 Files: Zero network latency or audio lag.\n• Dynamic Waveform: Canvas renders real-time frequency oscillations.\n• Interactive Dispatch: Guided conversational prompts.\n• Emergency Bridge: One-tap fallback to tel:108 / tel:112.", 
+         "text": "📞 Laptop Voice Calling & Live Microphone Stream\n• Real Laptop Mic: getUserMedia captures live microphone audio.\n• Real-Time Waveform: AnalyserNode visualizes voice frequencies.\n• Speech Recognition: Transcribes spoken speech into incident logs.\n• Voice Synthesis: Paramedic operator speaks out of laptop speakers.\n• Direct Telephony: Native tel:108 / tel:112 Windows Phone Link.", 
          "x": 370, "y": 92, "width": 320, "height": 135, "font_size": 9.5, "color": "#FFFFFF", "background_color": "#161D2F", "font_family": "Roboto", "line_spacing": 125},
 
         {"op": "add-textbox", "slide": "SLIDE_3", 
@@ -138,8 +138,8 @@ def generate_batch():
          "x": 30, "y": 66, "width": 660, "height": 20, "font_size": 11, "color": "#9CA9C4", "font_family": "Roboto"},
 
         {"op": "add-textbox", "slide": "SLIDE_4", 
-         "text": "🐳 Container & K8s Pipeline\n\n• Multi-Stage Docker:\n  Vite build ➔ Lean Nginx Alpine (~25MB production image).\n\n• Backend Security:\n  Node 20 Alpine with unprivileged non-root user execution.\n\n• Kubernetes HPA:\n  Auto-scales pods 2 to 10 at 70% CPU threshold.\n\n• ClusterIP & Ingress:\n  Nginx Ingress controller with TLS & rate limiting.\n\n• Zero-Downtime:\n  Rolling updates (maxSurge: 1, maxUnavailable: 0).", 
-         "x": 30, "y": 92, "width": 210, "height": 245, "font_size": 9.5, "color": "#FFFFFF", "background_color": "#161D2F", "font_family": "Roboto", "line_spacing": 125},
+         "text": "🐳 Container & K8s Pipeline\n\n• Multi-Stage Docker:\n  Vite build to lean Nginx Alpine (~25MB).\n\n• Backend Security:\n  Node 20 Alpine with unprivileged user.\n\n• Kubernetes HPA:\n  Auto-scales pods 2 to 10 at 70% CPU.\n\n• ClusterIP & Ingress:\n  Nginx Ingress with TLS & rate limits.\n\n• Zero-Downtime:\n  Rolling updates (maxSurge: 1).", 
+         "x": 30, "y": 92, "width": 210, "height": 240, "font_size": 9.5, "color": "#FFFFFF", "background_color": "#161D2F", "font_family": "Roboto", "line_spacing": 115},
 
         {"op": "add-textbox", "slide": "SLIDE_4", 
          "text": "🌐 Live Production Status\n\n• Vercel Live URL:\n  se-ne6t-git-main-ddd-510a.vercel.app with SPA edge rewrites.\n\n• GitHub Repository:\n  github.com/kuldeeprohit2006-cmd/se with synchronized commits.\n\n• MongoDB Atlas:\n  Replica set with automated failover & IPv4 fallback.\n\n• Performance:\n  Google Lighthouse > 90, sub-second FCP, zero CORS issues.\n\n• Verification Matrix:\n  Passed all 14 integration test cases.", 

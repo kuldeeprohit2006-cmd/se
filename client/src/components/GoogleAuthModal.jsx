@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import soundFX from '../utils/audioFX';
 
@@ -45,6 +45,74 @@ const GoogleAuthModal = ({ isOpen, onClose, onSuccess }) => {
   const [normalName, setNormalName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Parse JWT token from Google Identity Services
+  const parseGoogleJwt = (token) => {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      );
+      return JSON.parse(jsonPayload);
+    } catch (e) {
+      console.error('Failed to parse Google JWT:', e);
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const initGsi = () => {
+      if (window.google?.accounts?.id) {
+        try {
+          window.google.accounts.id.initialize({
+            client_id: '986250228-mediguard-iiitl.apps.googleusercontent.com',
+            callback: async (response) => {
+              if (response.credential) {
+                const payload = parseGoogleJwt(response.credential);
+                if (payload) {
+                  soundFX.playConnectChime();
+                  const res = await loginWithGoogle({
+                    email: payload.email,
+                    name: payload.name,
+                    avatar: payload.picture,
+                    googleId: payload.sub,
+                    credential: response.credential
+                  });
+                  onClose();
+                  if (onSuccess) onSuccess(res?.user);
+                }
+              }
+            },
+            auto_select: false
+          });
+
+          const btnContainer = document.getElementById('gsi_render_btn');
+          if (btnContainer) {
+            window.google.accounts.id.renderButton(btnContainer, {
+              theme: 'filled_blue',
+              size: 'large',
+              type: 'standard',
+              shape: 'rectangular',
+              text: 'continue_with',
+              logo_alignment: 'left',
+              width: 320
+            });
+          }
+        } catch (e) {
+          console.warn('GSI init notice:', e);
+        }
+      }
+    };
+
+    const timer = setTimeout(initGsi, 300);
+    return () => clearTimeout(timer);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -166,6 +234,14 @@ const GoogleAuthModal = ({ isOpen, onClose, onSuccess }) => {
         </div>
 
         {error && <div className="alert-error"><span>⚠️</span> {error}</div>}
+
+        {/* Real Google Identity Services (GIS) Button Container */}
+        <div style={{ padding: '0.7rem 1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(66, 133, 244, 0.05)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+          <div style={{ fontSize: '0.78rem', color: '#9CA9C4', marginBottom: '0.4rem', fontWeight: 500 }}>
+            Official Google Sign-In (Opens Real Google Account Chooser):
+          </div>
+          <div id="gsi_render_btn" style={{ minHeight: '40px', display: 'flex', justifyContent: 'center' }}></div>
+        </div>
 
         {/* Quick Google Account Chooser List */}
         <div style={{ padding: '0.8rem 1rem 0.2rem 1rem', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>

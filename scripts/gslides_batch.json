@@ -382,7 +382,7 @@
   {
     "op": "add-textbox",
     "slide": "SLIDE_3",
-    "text": "\ud83c\udf93 Automated IIITL Roll & Branch Parser\n\u2022 Regex: ^([a-z]{3})2025(\\d{3})@iiitl\\.ac\\.in$\n\u2022 Branch Mapping: LCS (CS), LIT (IT), LCI (CSAI), LCB (CSB).\n\u2022 Roll Support: Auto-validates roll range 1 to 60.\n\u2022 Google Sign-In: 1-click modal with campus branch selector.\n\u2022 Dual Mode: Supports both college emails and standard Gmail.",
+    "text": "\ud83c\udf93 Real Google OAuth 2.0 & IIITL Roll Engine\n\u2022 Google Identity Services: Real accounts.google.com popup.\n\u2022 Real JWT Decoding: Extracts email, verified name & photo.\n\u2022 IIITL Regex: Auto-binds LCS, LIT, LCI, LCB (Rolls 1-60).\n\u2022 Dual Mode: Supports campus @iiitl.ac.in & personal Gmail.\n\u2022 High Resilience: Fail-safe session fallback prevents lockouts.",
     "x": 30,
     "y": 92,
     "width": 320,
@@ -396,7 +396,7 @@
   {
     "op": "add-textbox",
     "slide": "SLIDE_3",
-    "text": "\ud83d\udcde Zero-Asset Web Audio Calling Synthesizer\n\u2022 Native AudioContext: Synthesizes dial tone, ringback & chimes.\n\u2022 100% Zero MP3 Files: Zero network latency or audio lag.\n\u2022 Dynamic Waveform: Canvas renders real-time frequency oscillations.\n\u2022 Interactive Dispatch: Guided conversational prompts.\n\u2022 Emergency Bridge: One-tap fallback to tel:108 / tel:112.",
+    "text": "\ud83d\udcde Laptop Voice Calling & Live Microphone Stream\n\u2022 Real Laptop Mic: getUserMedia captures live microphone audio.\n\u2022 Real-Time Waveform: AnalyserNode visualizes voice frequencies.\n\u2022 Speech Recognition: Transcribes spoken speech into incident logs.\n\u2022 Voice Synthesis: Paramedic operator speaks out of laptop speakers.\n\u2022 Direct Telephony: Native tel:108 / tel:112 Windows Phone Link.",
     "x": 370,
     "y": 92,
     "width": 320,
@@ -486,16 +486,16 @@
   {
     "op": "add-textbox",
     "slide": "SLIDE_4",
-    "text": "\ud83d\udc33 Container & K8s Pipeline\n\n\u2022 Multi-Stage Docker:\n  Vite build \u2794 Lean Nginx Alpine (~25MB production image).\n\n\u2022 Backend Security:\n  Node 20 Alpine with unprivileged non-root user execution.\n\n\u2022 Kubernetes HPA:\n  Auto-scales pods 2 to 10 at 70% CPU threshold.\n\n\u2022 ClusterIP & Ingress:\n  Nginx Ingress controller with TLS & rate limiting.\n\n\u2022 Zero-Downtime:\n  Rolling updates (maxSurge: 1, maxUnavailable: 0).",
+    "text": "\ud83d\udc33 Container & K8s Pipeline\n\n\u2022 Multi-Stage Docker:\n  Vite build to lean Nginx Alpine (~25MB).\n\n\u2022 Backend Security:\n  Node 20 Alpine with unprivileged user.\n\n\u2022 Kubernetes HPA:\n  Auto-scales pods 2 to 10 at 70% CPU.\n\n\u2022 ClusterIP & Ingress:\n  Nginx Ingress with TLS & rate limits.\n\n\u2022 Zero-Downtime:\n  Rolling updates (maxSurge: 1).",
     "x": 30,
     "y": 92,
     "width": 210,
-    "height": 245,
+    "height": 240,
     "font_size": 9.5,
     "color": "#FFFFFF",
     "background_color": "#161D2F",
     "font_family": "Roboto",
-    "line_spacing": 125
+    "line_spacing": 115
   },
   {
     "op": "add-textbox",

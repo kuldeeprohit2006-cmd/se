@@ -391,20 +391,20 @@ def create_beautiful_presentation():
                ACCENT_GREEN)
 
     feature_cards = [
-        ("🎓 Automated IIITL Roll & Branch Parser", [
-            ("Regex Validation", "^([a-z]{3})2025(\\d{3})@iiitl\\.ac\\.in$"),
-            ("Branch Decoding", "LCS ➔ CS, LIT ➔ IT, LCI ➔ CSAI, LCB ➔ CSB."),
-            ("Roll Support", "Auto-validates roll range 1 to 60 for 2025 batch."),
-            ("Google Auth Modal", "1-click Google Sign-In with branch & roll picker."),
-            ("Dual Mode Auth", "Seamlessly supports both IIITL IDs and standard Gmail.")
+        ("🎓 Real Google OAuth 2.0 & IIITL Roll Engine", [
+            ("Google GIS SDK", "Real OAuth popup directly from accounts.google.com."),
+            ("Real JWT Decoding", "Extracts email, verified display name, and avatar photo."),
+            ("IIITL Roll Parser", "Auto-binds LCS, LIT, LCI, LCB (Rolls 1 to 60)."),
+            ("Dual Mode Auth", "Supports official campus @iiitl.ac.in & personal Gmail."),
+            ("Session Resilience", "Fail-safe JWT token fallback prevents login lockouts.")
         ], Inches(0.8), Inches(1.9), Inches(5.72), Inches(2.35), ACCENT_BLUE),
 
-        ("📞 Zero-Asset Web Audio Calling Synthesizer", [
-            ("Native Web Audio", "Generates dial tone, ringback & operator chimes in browser."),
-            ("Zero Audio Files", "100% code synthesized — zero MP3 downloads or Wi-Fi lag."),
-            ("Live Canvas HUD", "Dynamic sine waveform frequency visualizer during call."),
-            ("Operator Prompts", "Interactive guided dispatcher conversational simulator."),
-            ("Emergency Hotlink", "Instant fallback to native tel:108 / tel:112 phone dialer.")
+        ("📞 Real Laptop Voice Calling & Microphone Stream", [
+            ("Real Laptop Mic", "getUserMedia captures live audio stream from laptop microphone."),
+            ("Real-Time Waveform", "AnalyserNode visualizes actual spoken voice frequencies."),
+            ("Speech Recognition", "Transcribes student speech into incident log in real-time."),
+            ("Speech Synthesis", "Paramedic dispatcher speaks out of laptop speakers."),
+            ("Direct Telephony", "Native tel:108 / tel:112 trigger via Windows Phone Link.")
         ], Inches(6.8), Inches(1.9), Inches(5.72), Inches(2.35), ACCENT_RED),
 
         ("🛡️ Admin Incident Command Center (/admin)", [

@@ -127,14 +127,16 @@ MediGuard follows a **3-Tier Layered Client-Server Architecture** augmented with
 
 ## 4. FUNCTIONAL REQUIREMENTS
 
-### FR-1: Domain-Restricted & Role-Based Authentication
-- **Description:** System shall support authentication for IIIT Lucknow students and administration.
-- **Inputs:** Student Email, Password, Google OAuth payload.
+### FR-1: Domain-Restricted & Role-Based Authentication with Official Google OAuth 2.0 (GIS)
+- **Description:** System shall support automated authentication for IIIT Lucknow students, campus staff, and system administrators using both traditional salted credentials and official Google Identity Services (GIS).
+- **Inputs:** Student Email, Password, or Google Identity Services credential token / OAuth2 access token.
 - **Processing:**
-  - If email matches `^([a-z]{3})2025(\d{3})@iiitl\.ac\.in`, extract prefix (`lcs` = CS, `lit` = IT, `lci` = CSAI, `lcb` = CSB) and roll number.
-  - If email matches `admin@iiitl.ac.in`, assign `role: 'admin'`.
-  - Passwords hashed using bcrypt with salt rounds = 12.
-- **Outputs:** HTTP 200 with signed JWT token (7-day validity) and sanitized User Object.
+  - **Google Identity Services (GIS):** Loads `https://accounts.google.com/gsi/client` SDK, initializes `google.accounts.id.initialize` and renders official Google button (`google.accounts.id.renderButton`).
+  - Decodes Google signed JWT payload extracting `email`, `name`, `picture`, and Google `sub` identifier. Supports Google OAuth 2.0 UserInfo API (`https://www.googleapis.com/oauth2/v3/userinfo`).
+  - If email matches `^([a-z]{3})2025(\d{3})@iiitl\.ac\.in`, system extracts department prefix (`lcs` = CS, `lit` = IT, `lci` = CSAI, `lcb` = CSB), batch `2025`, and roll number `1–60`.
+  - If email matches `admin@iiitl.ac.in`, system assigns `role: 'admin'`.
+  - Passwords hashed using bcrypt with salt rounds = 12 via Mongoose pre-save hooks.
+- **Outputs:** HTTP 200 with signed JWT token (7-day validity) and sanitized User Profile object.
 
 ### FR-2: One-Touch SOS Alerting with Safety Abort Window
 - **Description:** System shall provide immediate emergency ticket generation with protection against false alarms.
@@ -145,16 +147,17 @@ MediGuard follows a **3-Tier Layered Client-Server Architecture** augmented with
   - At $t = 0$, dispatch HTTP POST `/api/incidents` with GPS coordinates $(26.8016^\circ\text{ N}, 81.0242^\circ\text{ E})$ and user profile.
 - **Outputs:** Incident record persisted with status `TRIGGERED`; real-time broadcast notification displayed.
 
-### FR-3: 2-Way Simulated Audio Dispatch Calling
-- **Description:** System shall establish an interactive simulated voice dispatch channel.
-- **Inputs:** User clicks "Dispatch Audio Call".
+### FR-3: Real Laptop Calling API & 2-Way Audio Dispatch System
+- **Description:** System shall establish a real interactive voice calling channel directly from the user's laptop using modern web communication APIs and Windows telephony bridges.
+- **Inputs:** User clicks "Dispatch Call" or "Start 2-Way Audio Call", or dials via keypad.
 - **Processing:**
-  - Synthesize dual-tone multi-frequency (DTMF) dialing tone (350 Hz + 440 Hz).
-  - Synthesize American standard ringback tone (440 Hz + 480 Hz) for 3.5 seconds.
-  - Synthesize 4-note ascending major chime (C5–E5–G5–C6) on connection.
-  - Render real-time audio waveform oscillation on HTML5 canvas using `requestAnimationFrame`.
-  - Provide interactive scenario prompts and operator responses.
-- **Outputs:** Active call timer, transcript log, and persisted call session ID in database.
+  - **Real Laptop Microphone Capture:** Requests live microphone audio via `navigator.mediaDevices.getUserMedia({ audio: true })`.
+  - **Real-Time Frequency Analysis:** Connects microphone stream to `AudioContext` and `AnalyserNode` (FFT size 64) to compute byte frequency data and drive live canvas waveform oscillation in real time.
+  - **Real-Time Speech-to-Text Transcription:** Hooks `window.webkitSpeechRecognition || window.SpeechRecognition` to transcribe spoken emergency statements into incident notes in real time.
+  - **Paramedic Speech Synthesis:** Uses `window.speechSynthesis` (`SpeechSynthesisUtterance`) to voice paramedic operator responses aloud through laptop speakers.
+  - **DTMF Audio Keypad:** Generates real dual-tone multifrequency telephone tones (e.g., 697/1209 Hz for digit '1') using Web Audio `OscillatorNode` pairs.
+  - **Direct Laptop Telephony Bridge:** Triggers `tel:108` (Ambulance) and `tel:112` (National Emergency) via URI scheme, launching Windows Phone Link, Skype, or default VoIP softphone directly from the laptop.
+- **Outputs:** Active call timer, live waveform, speech transcript log, and persisted call incident telemetry.
 
 ### FR-4: Admin Incident Command Center
 - **Description:** Dedicated privileged console for campus emergency wardens.
