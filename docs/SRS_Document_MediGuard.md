@@ -127,13 +127,12 @@ MediGuard follows a **3-Tier Layered Client-Server Architecture** augmented with
 
 ## 4. FUNCTIONAL REQUIREMENTS
 
-### FR-1: Domain-Restricted & Role-Based Authentication with Official Google OAuth 2.0 (GIS)
-- **Description:** System shall support automated authentication for IIIT Lucknow students, campus staff, and system administrators using both traditional salted credentials and official Google Identity Services (GIS).
-- **Inputs:** Student Email, Password, or Google Identity Services credential token / OAuth2 access token.
+### FR-1: Domain-Restricted & Role-Based Authentication with Real Google OAuth 2.0 / Firebase Auth
+- **Description:** System shall support automated authentication for IIIT Lucknow students, campus staff, and system administrators using both salted local credentials and real Google OAuth 2.0 ("Choose an account").
+- **Inputs:** Student Email, Password, Google OAuth 2.0 access token / Firebase ID token.
 - **Processing:**
-  - **Google Identity Services (GIS):** Loads `https://accounts.google.com/gsi/client` SDK, initializes `google.accounts.id.initialize` and renders official Google button (`google.accounts.id.renderButton`).
-  - Decodes Google signed JWT payload extracting `email`, `name`, `picture`, and Google `sub` identifier. Supports Google OAuth 2.0 UserInfo API (`https://www.googleapis.com/oauth2/v3/userinfo`).
-  - If email matches `^([a-z]{3})2025(\d{3})@iiitl\.ac\.in`, system extracts department prefix (`lcs` = CS, `lit` = IT, `lci` = CSAI, `lcb` = CSB), batch `2025`, and roll number `1–60`.
+  - **Direct Google OAuth 2.0 & Firebase Auth:** Redirects users to `https://accounts.google.com/o/oauth2/v2/auth` (`prompt=select_account`) or opens Firebase `signInWithPopup`, then retrieves verified profile data (`sub`, `email`, `name`, `picture`) from `https://www.googleapis.com/oauth2/v3/userinfo` and submits it to `/api/auth/google`.
+  - If email matches `^([a-z]{3})2025(\d{3})@iiitl\.ac\.in` (or any batch `\d{4}`), system extracts department prefix (`lcs` = CS, `lit` = IT, `lci` = CSAI, `lcb` = CSB), batch, and roll number.
   - If email matches `admin@iiitl.ac.in`, system assigns `role: 'admin'`.
   - Passwords hashed using bcrypt with salt rounds = 12 via Mongoose pre-save hooks.
 - **Outputs:** HTTP 200 with signed JWT token (7-day validity) and sanitized User Profile object.
@@ -147,17 +146,15 @@ MediGuard follows a **3-Tier Layered Client-Server Architecture** augmented with
   - At $t = 0$, dispatch HTTP POST `/api/incidents` with GPS coordinates $(26.8016^\circ\text{ N}, 81.0242^\circ\text{ E})$ and user profile.
 - **Outputs:** Incident record persisted with status `TRIGGERED`; real-time broadcast notification displayed.
 
-### FR-3: Real Laptop Calling API & 2-Way Audio Dispatch System
-- **Description:** System shall establish a real interactive voice calling channel directly from the user's laptop using modern web communication APIs and Windows telephony bridges.
-- **Inputs:** User clicks "Dispatch Call" or "Start 2-Way Audio Call", or dials via keypad.
+### FR-3: Real Laptop Calling API, Telephony Bridge & Live WebRTC Redirects
+- **Description:** System shall establish interactive voice calling and direct external call launching from the user's laptop using Twilio REST API, `tel:` OS URI handlers, WebRTC platforms, and Web Audio/Speech APIs.
+- **Inputs:** User clicks "Dispatch Call", dials a target phone number, or clicks a live calling platform redirect.
 - **Processing:**
-  - **Real Laptop Microphone Capture:** Requests live microphone audio via `navigator.mediaDevices.getUserMedia({ audio: true })`.
-  - **Real-Time Frequency Analysis:** Connects microphone stream to `AudioContext` and `AnalyserNode` (FFT size 64) to compute byte frequency data and drive live canvas waveform oscillation in real time.
-  - **Real-Time Speech-to-Text Transcription:** Hooks `window.webkitSpeechRecognition || window.SpeechRecognition` to transcribe spoken emergency statements into incident notes in real time.
-  - **Paramedic Speech Synthesis:** Uses `window.speechSynthesis` (`SpeechSynthesisUtterance`) to voice paramedic operator responses aloud through laptop speakers.
-  - **DTMF Audio Keypad:** Generates real dual-tone multifrequency telephone tones (e.g., 697/1209 Hz for digit '1') using Web Audio `OscillatorNode` pairs.
-  - **Direct Laptop Telephony Bridge:** Triggers `tel:108` (Ambulance) and `tel:112` (National Emergency) via URI scheme, launching Windows Phone Link, Skype, or default VoIP softphone directly from the laptop.
-- **Outputs:** Active call timer, live waveform, speech transcript log, and persisted call incident telemetry.
+  - **Backend Twilio / WebRTC Bridge (`POST /api/incidents/call-bridge`):** Initiates an outbound Twilio Programmable Voice call via `api.twilio.com` when configured, or creates a unique Jitsi Meet live WebRTC calling room URL (`https://meet.jit.si/MediGuard-IIITL-...`).
+  - **Direct Calling Platform Redirects:** Provides instant 1-click redirects to **Jitsi WebRTC**, **Google Meet** (`https://meet.google.com/new`), and **WhatsApp Web/App** (`https://wa.me/...`).
+  - **Direct Laptop Telephony Bridge:** Triggers `tel:108`, `tel:112`, or custom numbers via `tel:` URI scheme (Windows Phone Link / mobile carrier dialer).
+  - **Real Laptop Microphone & Speech Pipeline:** Captures microphone audio via `navigator.mediaDevices.getUserMedia({ audio: true })`, analyzes frequency bins (`AnalyserNode`), transcribes speech (`SpeechRecognition`), synthesizes responses (`SpeechSynthesis`), and generates DTMF tones via Web Audio oscillators.
+- **Outputs:** Active call session ID, live audio telemetry, or redirected WebRTC / telephony call.
 
 ### FR-4: Admin Incident Command Center
 - **Description:** Dedicated privileged console for campus emergency wardens.

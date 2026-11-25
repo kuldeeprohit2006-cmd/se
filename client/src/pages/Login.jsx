@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import GoogleAuthModal from '../components/GoogleAuthModal';
+import { hasRealGoogleAuthConfigured, startRealGoogleAuth } from '../utils/googleAuth';
 import soundFX from '../utils/audioFX';
 
 const QUICK_ACCOUNTS = [
@@ -18,8 +19,30 @@ const Login = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleModalOpen, setGoogleModalOpen] = useState(false);
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
+
+  const handleGoogleButtonClick = async () => {
+    soundFX.playDialTone();
+    setError('');
+    if (!hasRealGoogleAuthConfigured()) {
+      setGoogleModalOpen(true);
+      return;
+    }
+    setLoading(true);
+    try {
+      const result = await startRealGoogleAuth(loginWithGoogle);
+      if (!result.redirected) {
+        soundFX.playConnectChime();
+        navigate(result.user?.role === 'admin' ? '/admin' : '/');
+      }
+    } catch (err) {
+      if (err.code !== 'auth/popup-closed-by-user') {
+        setError(err.message || 'Google authentication failed.');
+      }
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -67,10 +90,8 @@ const Login = () => {
         <button
           type="button"
           className="btn-google-oauth-full"
-          onClick={() => {
-            soundFX.playDialTone();
-            setGoogleModalOpen(true);
-          }}
+          disabled={loading}
+          onClick={handleGoogleButtonClick}
         >
           <svg width="20" height="20" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
@@ -78,7 +99,7 @@ const Login = () => {
             <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.14-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
             <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
           </svg>
-          <span>Sign In with Google (IIITL & Normal)</span>
+          <span>Continue with Google</span>
         </button>
 
         <div className="auth-separator">

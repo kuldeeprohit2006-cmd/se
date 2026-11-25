@@ -61,13 +61,12 @@
 
 ### 🎯 Top 5 Questions Professors Ask Member 2 & Winning Answers:
 
-**Q1: "How does your audio calling feature work directly from a laptop? Is it real?"**
-> **Answer:** *"Yes, sir! We implemented a real multi-tier laptop audio architecture using standard web APIs:
-> 1) **Real Laptop Microphone Capture:** We call `navigator.mediaDevices.getUserMedia({ audio: true })` to capture the student's live laptop microphone.
-> 2) **Live Audio Frequency Analysis:** We pipe the stream into `AudioContext.createAnalyser()` (FFT size 64) and read frequency data in real time to oscillate the canvas waveform to the student's actual voice.
-> 3) **Speech-to-Text Transcription:** We integrate `window.webkitSpeechRecognition` to transcribe the student's voice directly into emergency incident notes live.
-> 4) **Speech Synthesis Operator:** The paramedic dispatcher uses `window.speechSynthesis` to speak back instructions aloud through the laptop speakers.
-> 5) **Direct Laptop Telephony:** For real emergency calls, we trigger `tel:108` and `tel:112`, which immediately invokes Windows Phone Link or Skype directly from the laptop!"*
+**Q1: "How does your calling feature work directly from a laptop? Is it real?"**
+> **Answer:** *"Yes, sir! We implemented a real multi-channel laptop calling architecture:
+> 1) **Backend Calling API (`POST /api/incidents/call-bridge`):** Integrates Twilio Programmable Voice REST API (`api.twilio.com`) when Twilio credentials are present, or provisions a live WebRTC room ID.
+> 2) **1-Click External Live Calling Redirects:** Connects directly to **Jitsi Meet WebRTC** (zero-login 2-way audio/video between laptop and mobile phone), **Google Meet**, and **WhatsApp (`wa.me`)**.
+> 3) **Direct Laptop Telephony (`tel:`):** Invokes `tel:108` / `tel:112` / custom numbers via Windows Phone Link or mobile dialer.
+> 4) **In-Browser Live Mic Pipeline:** Captures microphone input via `navigator.mediaDevices.getUserMedia`, visualizes live voice frequencies with `AnalyserNode`, transcribes speech via `SpeechRecognition`, and outputs audio via `SpeechSynthesis` and Web Audio DTMF oscillators."*
 
 **Q2: "How did you implement the live audio waveform visualizer and DTMF tones?"**
 > **Answer:** *"We bind an HTML5 `<canvas>` element and update it via `window.requestAnimationFrame`. When the microphone is active, it reads live byte frequency bins from `analyserRef.current.getByteFrequencyData()`. For DTMF dialpad tones, we use pairs of sine-wave `OscillatorNode` instances (e.g., 697 Hz + 1209 Hz for key '1') with exponential gain decay, reproducing genuine telephone acoustics in pure code without any audio files."*
@@ -91,40 +90,39 @@
 > *Our backend runs on **Node.js with Express.js** following REST principles. For identity management, we implemented an automated regex parser for IIIT Lucknow student IDs:*
 > *If an email is `lcs2025044@iiitl.ac.in`, our regex extracts the prefix `lcs` and maps it to Computer Science, detects batch 2025, and assigns roll number 44.*
 > 
-> *We also implemented **Real Google Identity Services (GIS) OAuth 2.0**. When a student clicks Google Sign-In, the Google SDK renders the official Google button, verifies the user, and our backend binds their Google profile to their student role.*
+> *We also implemented **Real Google OAuth 2.0 / Firebase Google Authentication**. When a user clicks Continue with Google, they are taken to Google's authentic `accounts.google.com` account chooser, and our backend verifies and binds their Google profile to their IIITL branch/roll or admin role.*
 > 
 > *Passwords are hashed using **bcrypt with 12 salt rounds** via Mongoose pre-save hooks. Sessions are authenticated via stateless **JWT tokens with HMAC-SHA256 signatures**.*
 > 
 > *For our data layer, we designed two primary MongoDB collections: `User` and `EmergencyIncident`. To prevent single-point-of-failure issues during cloud network spikes, we engineered a **hybrid fallback memory layer** that guarantees emergency SOS logging never fails."*
 
-### 🎯 Top 5 Questions Professors Ask Member 3 & Winning Answers:
+### 🎯 Top 6 Questions Professors Ask Member 3 & Winning Answers:
 
 **Q1: "How does real Google Authentication work in your system?"**
-> **Answer:** *"Sir, we implement official **Google Identity Services (GIS)** using `https://accounts.google.com/gsi/client`. 
-> 1) The client initializes `google.accounts.id.initialize` and renders the authentic Google button.
-> 2) When the user signs in, Google returns a cryptographically signed credential JWT.
-> 3) Our frontend parses this token (`sub`, `email`, `name`, `picture`) and forwards it to our `/api/auth/google` route.
-> 4) Our backend matches the email against our IIIT Lucknow roll parser to automatically grant student or admin privileges, saves the record in MongoDB, and issues an application JWT."*
+> **Answer:** *"Sir, we support both **Direct Google OAuth 2.0 (`accounts.google.com/o/oauth2/v2/auth`)** and **Firebase Auth (`signInWithPopup` with `prompt: 'select_account'`)**.
+> 1) When clicking Continue with Google, the user sees Google's real 'Choose an account' chooser.
+> 2) After choosing their Gmail or `@iiitl.ac.in` Workspace account, the frontend retrieves their verified `email`, `name`, `picture`, and `sub` via Google's UserInfo API / Firebase ID token and posts it to `/api/auth/google`.
+> 3) Our backend extracts any IIITL branch/batch/roll pattern automatically, upserts the user in MongoDB, and issues an application JWT."*
 
-**Q1: "Explain how JSON Web Tokens (JWT) work in your application. What are the three parts?"**
+**Q2: "Explain how JSON Web Tokens (JWT) work in your application. What are the three parts?"**
 > **Answer:** *"A JWT consists of three parts separated by dots: **Header**, **Payload**, and **Signature**. 
 > 1) The *Header* specifies the algorithm, HS256. 
 > 2) The *Payload* contains claims—in our case, the user's MongoDB `_id` and issue/expiry timestamps. 
 > 3) The *Signature* is generated using HMAC-SHA256 hashing the header and payload with our secret server key (`JWT_SECRET`). 
 > The server does not need to query a session database on every request; it simply verifies the signature mathematically, which enables horizontal scaling."*
 
-**Q2: "How do you protect your Admin routes from unauthorized access?"**
+**Q3: "How do you protect your Admin routes from unauthorized access?"**
 > **Answer:** *"We use two-tier Express middleware: `protect` followed by `adminOnly`. 
 > First, `protect` decodes the JWT and attaches the authenticated user record to `req.user`. 
 > Second, `adminOnly` checks `if (req.user.role === 'admin') next(); else res.status(403).json(...)`. If an ordinary student attempts to hit `/api/admin/*`, they receive HTTP 403 Forbidden."*
 
-**Q3: "Why did you use MongoDB (NoSQL) instead of MySQL or PostgreSQL (Relational)?"**
+**Q4: "Why did you use MongoDB (NoSQL) instead of MySQL or PostgreSQL (Relational)?"**
 > **Answer:** *"Emergency medical incidents and clinical data have flexible and evolving schema requirements. For instance, an emergency incident may contain GPS coordinates, varying symptom tags, dynamic dosage tables, and nested dispatcher notes. MongoDB’s JSON/BSON document model allows high-throughput write performance for emergency SOS tickets without complex multi-table joins."*
 
-**Q4: "Why do you use bcrypt instead of simple SHA-256 or MD5 for passwords?"**
+**Q5: "Why do you use bcrypt instead of simple SHA-256 or MD5 for passwords?"**
 > **Answer:** *"SHA-256 and MD5 are general cryptographic hashing functions designed to be fast, making them vulnerable to brute-force dictionary attacks and GPU rainbow tables. Bcrypt is an adaptive key-derivation function that incorporates a work factor (salt rounds = 12). It generates a random salt per user and is deliberately computationally expensive, neutralizing offline rainbow table attacks."*
 
-**Q5: "What happens if MongoDB Atlas has a network timeout during a critical SOS call?"**
+**Q6: "What happens if MongoDB Atlas has a network timeout during a critical SOS call?"**
 > **Answer:** *"In `server/services/storageService.js`, we implemented an enterprise **hybrid resilience layer**. Our routes check `mongoose.connection.readyState === 1`. If MongoDB Atlas is actively connected, it persists to the cloud. If a cloud DNS or network timeout occurs, it seamlessly falls back to our persistent in-memory data cache, ensuring students are never met with an HTTP 500 error during an emergency."*
 
 ---

@@ -21,6 +21,7 @@ const AudioDispatchCallModal = ({ isOpen, onClose, incidentData }) => {
   const [messages, setMessages] = useState([]);
   const [dialNumber, setDialNumber] = useState('108');
   const [showKeypad, setShowKeypad] = useState(false);
+  const [bridgeStatus, setBridgeStatus] = useState('');
 
   const canvasRef = useRef(null);
   const timerRef = useRef(null);
@@ -175,11 +176,42 @@ const AudioDispatchCallModal = ({ isOpen, onClose, incidentData }) => {
     }, 900);
   };
 
-  // Trigger real laptop telephony dialer via tel: URI scheme
-  const triggerLaptopTelephony = (num) => {
-    const target = num || dialNumber || '108';
+  // Trigger real laptop telephony dialer via tel: URI + optional Twilio backend bridge
+  const triggerLaptopTelephony = async (num) => {
+    const target = (num || dialNumber || '108').trim();
     playDTMFTone('1');
-    window.location.href = `tel:${target}`;
+    setBridgeStatus(`Dialing ${target}...`);
+    try {
+      const { data } = await API.post('/incidents/call-bridge', {
+        toNumber: target,
+        campusZone: incidentData?.campusZone || 'IIIT Lucknow Campus'
+      });
+      if (data?.mode === 'twilio-pstn') {
+        setBridgeStatus(`Real Twilio PSTN call active (SID: ${data.callSid})`);
+        return;
+      }
+    } catch {
+      // Fallback straight to OS tel: protocol (Windows Phone Link / mobile dialer)
+    }
+    setBridgeStatus(`Opened system dialer (tel:${target})`);
+    window.open(`tel:${target}`, '_self');
+  };
+
+  // Redirect to real live WebRTC / Google Meet / WhatsApp calling platforms
+  const openWebCall = (service) => {
+    const roomSuffix = incidentData?._id ? incidentData._id.slice(-6) : 'CampusRoom';
+    const encodedMsg = encodeURIComponent(
+      `🚨 MediGuard Emergency Call Needed at ${incidentData?.campusZone || 'IIIT Lucknow Campus'}!`
+    );
+    const digits = (dialNumber || '').replace(/[^0-9]/g, '');
+    const waTarget = digits.length >= 10 ? `https://wa.me/${digits}?text=${encodedMsg}` : `https://web.whatsapp.com/`;
+
+    const urls = {
+      'jitsi-webrtc': `https://meet.jit.si/MediGuard-IIITL-${roomSuffix}`,
+      'google-meet': 'https://meet.google.com/new',
+      'whatsapp': waTarget
+    };
+    window.open(urls[service] || urls['jitsi-webrtc'], '_blank', 'noopener,noreferrer');
   };
 
   // Initialize and run call lifecycle
@@ -500,7 +532,7 @@ const AudioDispatchCallModal = ({ isOpen, onClose, incidentData }) => {
             onClick={() => setIsMuted(!isMuted)}
             title="Mute/Unmute Mic"
           >
-            {isMuted ? '🔇 Unmute Mic' : '🎙️ Mute Mic'}
+            {isMuted ? '🔇 Unmute' : '🎙️ Mute'}
           </button>
 
           <button
@@ -518,7 +550,7 @@ const AudioDispatchCallModal = ({ isOpen, onClose, incidentData }) => {
             title="Calls 108 directly via Windows Phone Link / Laptop Dialer"
             style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
           >
-            📞 Dial 108
+            📞 108
           </a>
 
           <a
@@ -527,7 +559,7 @@ const AudioDispatchCallModal = ({ isOpen, onClose, incidentData }) => {
             title="Calls 112 National Emergency from Laptop"
             style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
           >
-            🚨 Dial 112
+            🚨 112
           </a>
 
           <button
@@ -535,12 +567,55 @@ const AudioDispatchCallModal = ({ isOpen, onClose, incidentData }) => {
             onClick={() => setIsSpeaker(!isSpeaker)}
             title="Toggle Laptop Speaker Voice"
           >
-            {isSpeaker ? '🔊 Speaker On' : '🔈 Speaker Off'}
+            {isSpeaker ? '🔊 Speaker' : '🔈 Off'}
           </button>
 
           <button className="btn-call-end" onClick={handleEndCall} title="End Emergency Call">
-            🔴 End Call
+            🔴 End
           </button>
+        </div>
+
+        {/* Real Web Calling Services — Redirects to actual live calling platforms */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', padding: '0.65rem 1rem', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+          {bridgeStatus && (
+            <div style={{ fontSize: '0.75rem', color: '#00E08E', textAlign: 'center', fontWeight: 600 }}>
+              📡 {bridgeStatus}
+            </div>
+          )}
+          <div style={{ display: 'flex', gap: '0.45rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+            <button
+              type="button"
+              className="btn-call-ctrl"
+              onClick={() => triggerLaptopTelephony(dialNumber)}
+              style={{ fontSize: '0.74rem', borderColor: 'rgba(0,224,142,0.4)' }}
+            >
+              📲 Call {dialNumber || '108'} (Phone Link / Twilio)
+            </button>
+            <button
+              type="button"
+              className="btn-call-ctrl"
+              onClick={() => openWebCall('jitsi-webrtc')}
+              style={{ fontSize: '0.74rem' }}
+            >
+              🌐 Live WebRTC Call (Jitsi)
+            </button>
+            <button
+              type="button"
+              className="btn-call-ctrl"
+              onClick={() => openWebCall('google-meet')}
+              style={{ fontSize: '0.74rem' }}
+            >
+              🎥 Google Meet Call
+            </button>
+            <button
+              type="button"
+              className="btn-call-ctrl"
+              onClick={() => openWebCall('whatsapp')}
+              style={{ fontSize: '0.74rem' }}
+            >
+              💬 WhatsApp Call
+            </button>
+          </div>
         </div>
       </div>
     </div>

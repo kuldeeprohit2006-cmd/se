@@ -110,11 +110,11 @@ def generate_batch():
          "x": 30, "y": 66, "width": 660, "height": 20, "font_size": 11, "color": "#9CA9C4", "font_family": "Roboto"},
 
         {"op": "add-textbox", "slide": "SLIDE_3", 
-         "text": "🎓 Real Google OAuth 2.0 & IIITL Roll Engine\n• Google Identity Services: Real accounts.google.com popup.\n• Real JWT Decoding: Extracts email, verified name & photo.\n• IIITL Regex: Auto-binds LCS, LIT, LCI, LCB (Rolls 1-60).\n• Dual Mode: Supports campus @iiitl.ac.in & personal Gmail.\n• High Resilience: Fail-safe session fallback prevents lockouts.", 
+         "text": "🎓 Real Google OAuth 2.0 & IIITL Roll Engine\n• Real OAuth / Firebase: Opens accounts.google.com chooser.\n• Google UserInfo API: Fetches verified name, email & avatar.\n• IIITL Regex: Auto-binds LCS, LIT, LCI, LCB (Rolls 1-60).\n• Dual Mode: Supports @iiitl.ac.in Workspace & Gmail.\n• High Resilience: Fail-safe JWT & MongoDB fallback.", 
          "x": 30, "y": 92, "width": 320, "height": 135, "font_size": 9.5, "color": "#FFFFFF", "background_color": "#161D2F", "font_family": "Roboto", "line_spacing": 125},
 
         {"op": "add-textbox", "slide": "SLIDE_3", 
-         "text": "📞 Laptop Voice Calling & Live Microphone Stream\n• Real Laptop Mic: getUserMedia captures live microphone audio.\n• Real-Time Waveform: AnalyserNode visualizes voice frequencies.\n• Speech Recognition: Transcribes spoken speech into incident logs.\n• Voice Synthesis: Paramedic operator speaks out of laptop speakers.\n• Direct Telephony: Native tel:108 / tel:112 Windows Phone Link.", 
+         "text": "📞 Real Laptop Calling API & WebRTC Bridges\n• Backend Twilio API: Real PSTN outbound call via /call-bridge.\n• Live WebRTC Call: 1-click Jitsi & Google Meet calling rooms.\n• Direct Telephony: Native tel:108/112 & WhatsApp call links.\n• Live Mic & Waveform: getUserMedia + AnalyserNode FFT.\n• Speech Pipeline: Live SpeechRecognition & SpeechSynthesis.", 
          "x": 370, "y": 92, "width": 320, "height": 135, "font_size": 9.5, "color": "#FFFFFF", "background_color": "#161D2F", "font_family": "Roboto", "line_spacing": 125},
 
         {"op": "add-textbox", "slide": "SLIDE_3", 

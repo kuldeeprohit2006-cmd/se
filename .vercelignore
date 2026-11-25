@@ -1,0 +1,13 @@
+node_modules
+client/node_modules
+server/node_modules
+.git
+.vercel
+docs
+k8s
+scripts
+Project_Submission_Package
+*.pptx
+*.pdf
+*.zip
+docker-compose.yml

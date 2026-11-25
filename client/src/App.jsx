@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { consumeGoogleOAuthHash } from './utils/googleAuth';
+import soundFX from './utils/audioFX';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import SOSModal from './components/SOSModal';
@@ -18,13 +20,29 @@ import AdminPortal from './pages/AdminPortal';
 
 function SpaRedirectHandler() {
   const navigate = useNavigate();
+  const { loginWithGoogle } = useAuth();
+
   useEffect(() => {
     const redirect = sessionStorage.getItem('mediguard_spa_redirect');
     if (redirect) {
       sessionStorage.removeItem('mediguard_spa_redirect');
       navigate(redirect, { replace: true });
+      return;
     }
-  }, [navigate]);
+
+    if (window.location.hash.includes('access_token=')) {
+      consumeGoogleOAuthHash(loginWithGoogle)
+        .then((res) => {
+          if (res?.user) {
+            soundFX.playConnectChime();
+            navigate(res.user.role === 'admin' ? '/admin' : '/', { replace: true });
+          }
+        })
+        .catch((err) => {
+          console.error('Google OAuth callback error:', err);
+        });
+    }
+  }, [navigate, loginWithGoogle]);
   return null;
 }
 

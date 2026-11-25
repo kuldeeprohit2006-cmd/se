@@ -382,7 +382,7 @@
   {
     "op": "add-textbox",
     "slide": "SLIDE_3",
-    "text": "\ud83c\udf93 Real Google OAuth 2.0 & IIITL Roll Engine\n\u2022 Google Identity Services: Real accounts.google.com popup.\n\u2022 Real JWT Decoding: Extracts email, verified name & photo.\n\u2022 IIITL Regex: Auto-binds LCS, LIT, LCI, LCB (Rolls 1-60).\n\u2022 Dual Mode: Supports campus @iiitl.ac.in & personal Gmail.\n\u2022 High Resilience: Fail-safe session fallback prevents lockouts.",
+    "text": "\ud83c\udf93 Real Google OAuth 2.0 & IIITL Roll Engine\n\u2022 Real OAuth / Firebase: Opens accounts.google.com chooser.\n\u2022 Google UserInfo API: Fetches verified name, email & avatar.\n\u2022 IIITL Regex: Auto-binds LCS, LIT, LCI, LCB (Rolls 1-60).\n\u2022 Dual Mode: Supports @iiitl.ac.in Workspace & Gmail.\n\u2022 High Resilience: Fail-safe JWT & MongoDB fallback.",
     "x": 30,
     "y": 92,
     "width": 320,
@@ -396,7 +396,7 @@
   {
     "op": "add-textbox",
     "slide": "SLIDE_3",
-    "text": "\ud83d\udcde Laptop Voice Calling & Live Microphone Stream\n\u2022 Real Laptop Mic: getUserMedia captures live microphone audio.\n\u2022 Real-Time Waveform: AnalyserNode visualizes voice frequencies.\n\u2022 Speech Recognition: Transcribes spoken speech into incident logs.\n\u2022 Voice Synthesis: Paramedic operator speaks out of laptop speakers.\n\u2022 Direct Telephony: Native tel:108 / tel:112 Windows Phone Link.",
+    "text": "\ud83d\udcde Real Laptop Calling API & WebRTC Bridges\n\u2022 Backend Twilio API: Real PSTN outbound call via /call-bridge.\n\u2022 Live WebRTC Call: 1-click Jitsi & Google Meet calling rooms.\n\u2022 Direct Telephony: Native tel:108/112 & WhatsApp call links.\n\u2022 Live Mic & Waveform: getUserMedia + AnalyserNode FFT.\n\u2022 Speech Pipeline: Live SpeechRecognition & SpeechSynthesis.",
     "x": 370,
     "y": 92,
     "width": 320,

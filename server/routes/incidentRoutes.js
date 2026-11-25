@@ -134,4 +134,64 @@ router.post('/:id/call', protect, async (req, res) => {
   }
 });
 
+// POST /api/incidents/call-bridge - Real Telephony API (Twilio) + WebRTC Call Room Generator
+router.post('/call-bridge', protect, async (req, res) => {
+  try {
+    const { toNumber = '108', campusZone = 'Campus' } = req.body || {};
+    const roomId = `MediGuard-IIITL-${Date.now().toString(36)}`;
+    const webrtcUrl = `https://meet.jit.si/${roomId}`;
+
+    const sid = process.env.TWILIO_ACCOUNT_SID;
+    const token = process.env.TWILIO_AUTH_TOKEN;
+    const fromNumber = process.env.TWILIO_FROM_NUMBER;
+
+    if (sid && token && fromNumber && toNumber) {
+      const authHeader = Buffer.from(`${sid}:${token}`).toString('base64');
+      const params = new URLSearchParams({
+        To: toNumber,
+        From: fromNumber,
+        Twiml: `<Response><Say>MediGuard Campus Emergency Alert from ${campusZone}. A student has requested immediate assistance.</Say></Response>`
+      });
+
+      const twilioResp = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Calls.json`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Basic ${authHeader}`,
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: params.toString()
+      });
+
+      const twilioData = await twilioResp.json();
+      if (!twilioResp.ok) {
+        return res.status(twilioResp.status).json({
+          success: false,
+          mode: 'twilio-error',
+          message: twilioData.message || 'Twilio API call failed',
+          webrtcUrl
+        });
+      }
+
+      return res.json({
+        success: true,
+        mode: 'twilio-pstn',
+        callSid: twilioData.sid,
+        status: twilioData.status,
+        webrtcUrl
+      });
+    }
+
+    return res.json({
+      success: true,
+      mode: 'webrtc-bridge',
+      roomId,
+      webrtcUrl,
+      telUri: `tel:${toNumber}`
+    });
+  } catch (error) {
+    console.error('Call bridge error:', error);
+    res.status(500).json({ success: false, message: 'Call bridge error', error: error.message });
+  }
+});
+
 module.exports = router;
