@@ -9,14 +9,19 @@ API.interceptors.request.use((config) => {
   return config;
 });
 
-// Handle 401 — token expired
+// Handle 401 — token expired (ignore on auth endpoints or login page)
 API.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const url = error.config?.url || '';
+    const isAuthRoute = url.includes('/auth/login') || url.includes('/auth/google') || url.includes('/auth/register');
+    
+    if (error.response?.status === 401 && !isAuthRoute) {
       localStorage.removeItem('mediguard_token');
       localStorage.removeItem('mediguard_user');
-      window.location.href = '/login';
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

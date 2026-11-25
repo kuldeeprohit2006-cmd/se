@@ -143,7 +143,13 @@ const Login = () => {
       <GoogleAuthModal
         isOpen={googleModalOpen}
         onClose={() => setGoogleModalOpen(false)}
-        onSuccess={() => navigate('/')}
+        onSuccess={(user) => {
+          if (user?.role === 'admin') {
+            navigate('/admin');
+          } else {
+            navigate('/');
+          }
+        }}
       />
     </div>
   );

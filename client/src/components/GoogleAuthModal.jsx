@@ -9,6 +9,32 @@ const BRANCHES = [
   { code: 'lcb', name: 'CS & Business Studies (CSB)', label: 'LCB' }
 ];
 
+const FAST_GOOGLE_ACCOUNTS = [
+  {
+    name: 'Kuldeep Sharma',
+    email: 'lcs2025044@iiitl.ac.in',
+    tag: 'CS • Roll 044 (Batch 2025)',
+    role: 'student',
+    branch: 'lcs',
+    roll: 44,
+    avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=lcs2025044'
+  },
+  {
+    name: 'Campus Emergency Director',
+    email: 'admin@iiitl.ac.in',
+    tag: 'Campus Incident Command Admin',
+    role: 'admin',
+    avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=admin_iiitl'
+  },
+  {
+    name: 'Kuldeep (Personal Gmail)',
+    email: 'kuldeeprohit2006@gmail.com',
+    tag: 'Personal Google Account',
+    role: 'student',
+    avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=kuldeeprohit2006'
+  }
+];
+
 const GoogleAuthModal = ({ isOpen, onClose, onSuccess }) => {
   const { loginWithGoogle } = useAuth();
   const [tab, setTab] = useState('iiitl'); // 'iiitl' | 'normal' | 'admin'
@@ -25,6 +51,28 @@ const GoogleAuthModal = ({ isOpen, onClose, onSuccess }) => {
   const paddedRoll = String(rollNo).padStart(3, '0');
   const computedEmail = `${selectedBranch}2025${paddedRoll}@iiitl.ac.in`;
 
+  const handleFastAccountClick = async (acc) => {
+    soundFX.playDialTone();
+    setLoading(true);
+    setError('');
+
+    try {
+      const res = await loginWithGoogle({
+        email: acc.email,
+        name: acc.name,
+        googleId: `google_fast_${acc.email.split('@')[0]}`,
+        avatar: acc.avatar
+      });
+      soundFX.playConnectChime();
+      onClose();
+      if (onSuccess) onSuccess(res?.user);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Google sign-in encountered an issue. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleIIITLSubmit = async () => {
     soundFX.playDialTone();
     setLoading(true);
@@ -39,16 +87,16 @@ const GoogleAuthModal = ({ isOpen, onClose, onSuccess }) => {
       };
 
       const name = studentName.trim() || defaultNames[selectedBranch] || `Student ${paddedRoll}`;
-      await loginWithGoogle({
+      const res = await loginWithGoogle({
         email: computedEmail,
         name,
         googleId: `google_${selectedBranch}_${paddedRoll}`
       });
       soundFX.playConnectChime();
       onClose();
-      if (onSuccess) onSuccess();
+      if (onSuccess) onSuccess(res?.user);
     } catch (err) {
-      setError(err.response?.data?.message || 'Google sign-in failed');
+      setError(err.response?.data?.message || 'Google sign-in encountered an issue.');
     } finally {
       setLoading(false);
     }
@@ -62,16 +110,16 @@ const GoogleAuthModal = ({ isOpen, onClose, onSuccess }) => {
     setError('');
 
     try {
-      await loginWithGoogle({
+      const res = await loginWithGoogle({
         email: normalEmail,
         name: normalName.trim() || normalEmail.split('@')[0],
         googleId: `google_user_${Date.now()}`
       });
       soundFX.playConnectChime();
       onClose();
-      if (onSuccess) onSuccess();
+      if (onSuccess) onSuccess(res?.user);
     } catch (err) {
-      setError(err.response?.data?.message || 'Google sign-in failed');
+      setError(err.response?.data?.message || 'Google sign-in encountered an issue.');
     } finally {
       setLoading(false);
     }
@@ -83,16 +131,16 @@ const GoogleAuthModal = ({ isOpen, onClose, onSuccess }) => {
     setError('');
 
     try {
-      await loginWithGoogle({
+      const res = await loginWithGoogle({
         email: 'admin@iiitl.ac.in',
         name: 'Campus Emergency Director',
         googleId: 'google_admin_01'
       });
       soundFX.playConnectChime();
       onClose();
-      if (onSuccess) onSuccess();
+      if (onSuccess) onSuccess(res?.user);
     } catch (err) {
-      setError(err.response?.data?.message || 'Admin sign-in failed');
+      setError(err.response?.data?.message || 'Admin sign-in encountered an issue.');
     } finally {
       setLoading(false);
     }
@@ -117,29 +165,73 @@ const GoogleAuthModal = ({ isOpen, onClose, onSuccess }) => {
           <button className="btn-close-modal" onClick={onClose}>✕</button>
         </div>
 
-        {/* Tab switcher */}
+        {error && <div className="alert-error"><span>⚠️</span> {error}</div>}
+
+        {/* Quick Google Account Chooser List */}
+        <div style={{ padding: '0.8rem 1rem 0.2rem 1rem', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+          <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)', fontWeight: 600 }}>
+            ⚡ 1-Tap Google Accounts (Instant Sign In):
+          </span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginTop: '0.5rem' }}>
+            {FAST_GOOGLE_ACCOUNTS.map((acc, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => handleFastAccountClick(acc)}
+                disabled={loading}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '0.8rem',
+                  padding: '0.55rem 0.8rem',
+                  background: 'rgba(255, 255, 255, 0.04)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '8px',
+                  color: '#fff',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(14, 144, 255, 0.15)'; e.currentTarget.style.borderColor = '#0E90FF'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)'; e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)'; }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                  <img src={acc.avatar} alt="avatar" style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#26304D' }} />
+                  <div>
+                    <div style={{ fontSize: '0.88rem', fontWeight: 600 }}>{acc.name}</div>
+                    <div style={{ fontSize: '0.75rem', color: '#9CA9C4' }}>{acc.email}</div>
+                  </div>
+                </div>
+                <span style={{ fontSize: '0.7rem', padding: '0.2rem 0.5rem', borderRadius: '4px', background: acc.role === 'admin' ? 'rgba(185, 96, 255, 0.2)' : 'rgba(0, 224, 142, 0.2)', color: acc.role === 'admin' ? '#B960FF' : '#00E08E', fontWeight: 600 }}>
+                  {acc.role === 'admin' ? 'ADMIN' : 'STUDENT'}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Tab switcher for Custom Configuration */}
         <div className="google-tabs">
           <button
             className={`g-tab-btn ${tab === 'iiitl' ? 'active' : ''}`}
             onClick={() => setTab('iiitl')}
           >
-            🎓 IIIT Lucknow Student ID
+            🎓 Custom IIITL Roll
           </button>
           <button
             className={`g-tab-btn ${tab === 'normal' ? 'active' : ''}`}
             onClick={() => setTab('normal')}
           >
-            📧 Normal Google Account
+            📧 Other Google Email
           </button>
           <button
             className={`g-tab-btn ${tab === 'admin' ? 'active' : ''}`}
             onClick={() => setTab('admin')}
           >
-            🛡️ Admin Portal Access
+            🛡️ Admin Command Hub
           </button>
         </div>
-
-        {error && <div className="alert-error"><span>⚠️</span> {error}</div>}
 
         {/* Tab 1: IIIT Lucknow Student Portal */}
         {tab === 'iiitl' && (

@@ -1,8 +1,11 @@
 const mongoose = require('mongoose');
 
+const DEFAULT_MONGO_URI = 'mongodb+srv://kuldeeprohit2006_db_user:pKqXVjPHQoJ3f0kw@cluster0.3pozljj.mongodb.net/mediguard';
+
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGO_URI, {
+    const uri = process.env.MONGO_URI || DEFAULT_MONGO_URI;
+    const conn = await mongoose.connect(uri, {
       serverSelectionTimeoutMS: 15000,
       family: 4 // Use IPv4, avoid IPv6 DNS timeout on Windows
     });
